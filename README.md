@@ -34,4 +34,4 @@ Make elements the same colour as the background to hide them
 - Current Barometric Pressure in millibars (mb), inches of Mercury (Hg), millimeters of Mercury (mmHG), Pascals or Standard atmospheric (atm)
 - Total Rain amount today in mm or inches
 - If it's not raining currently, the left hand icon shows a thermometer.  If it is raining, it shows an umbrella
-- If there has been no rain today, right hand icon show a barometer.  If it has rained today, shows a raindrop
+- If there has been no rain today, right hand icon shows a barometer.  If it has rained today, shows a raindrop
