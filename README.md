@@ -2,7 +2,7 @@
 ![Banner Elizabeth](https://user-images.githubusercontent.com/39700835/183258123-45612506-ca07-4eff-bf98-44bef5031de2.png)
 
 
-Elizabeth is an easy to read pebble watchface with weather & steps, using the Elizabeth Line font from the London Underground. 
+Elizabeth is an easy to read pebble watchface with weather & steps, using the Elizabeth Line font from the London Underground.
 
 Features:
 - Fully configurable colours
@@ -13,7 +13,7 @@ Features:
 - Auto-translation of weekday supported for: English, Spanish, German, French, Portuguese, Italian
 - Battery bar
 - Auto-detection of 12h/24h based on your watch settings - Bluetooth disconnect vibe warning and icon (no vibe in quiet time)
-- Optional night theme colours between sunset and sunrise 
+- Optional night theme colours between sunset and sunrise
 
 Weather:
 - Choice of two weather providers: Dark Sky (existing api keys only) or OpenWeathermap (link to sign up for a new api key on the settings page for the watchface)
@@ -22,7 +22,7 @@ Weather:
 - Option to show Personal Weather Station data*
 
 Tap or shake for:
-- Rain info for the next hour, showing rain graph, rain quantity (mm/h), and chance of rain (%).  Change the length of the rain graph in the settings.
+- Rain info for the next hour, showing rain graph, rain quantity (mm per hour or inches per hour), and chance of rain (%).  Change the size/length of the rain graph in the settings.
 - Moonphase
 - Steps (on Time Series and Pebble 2). Steps/health can be turned off via config page.  If steps are off, shows high/low temperature instead.
 
