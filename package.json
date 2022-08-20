@@ -1,0 +1,203 @@
+{
+    "author": "astosia",
+    "dependencies": {
+        "pebble-clay": "^1.0.4",
+        "pebble-fctx": "^1.6.0",
+        "pebble-fctx-compiler": "^1.2.2"
+    },
+    "keywords": [],
+    "name": "Elizabeth",
+    "pebble": {
+        "capabilities": [
+            "location",
+            "configurable",
+            "health"
+        ],
+        "displayName": "Elizabeth",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "Back1Color",
+            "Back1ColorN",
+            "Back2Color",
+            "Back2ColorN",
+            "FrameColor2",
+            "FrameColor2N",
+            "FrameColor",
+            "FrameColorN",
+            "Text1Color",
+            "Text1ColorN",
+            "Text2Color",
+            "Text2ColorN",
+            "FrameColor",
+            "FrameColorN",
+            "WeatherCond",
+            "WeatherTemp",
+            "HourSunrise",
+            "HourSunset",
+            "Cond1h",
+            "rain1h",
+            "raintime24h",
+            "raintime12h",
+            "pop1h",
+            "HealthOff",
+            "VibeOn",
+            "AddZero12h",
+            "RemoveZero24h",
+            "NameLocation",
+            "UpSlider",
+            "Rainmultiplier",
+            "NightTheme",
+            "APIKEY_User",
+            "WeatherUnit",
+            "Weathertime",
+            "Weathertimecapture",
+            "WeatherProv",
+            "EmailPMKEY",
+            "PINPMKEY",
+            "HourColor",
+            "HourColorN",
+            "MinColor",
+            "MinColorN",
+            "DateColor",
+            "DateColorN",
+            "WeatherWind",
+            "WeatherWindRound",
+            "bluetoothvibe",
+            "WEATHER_SUNSET_KEY",
+            "WEATHER_SUNSET_KEY_12H",
+            "WEATHER_SUNRISE_KEY_12H",
+            "Text3Color",
+            "Text3ColorN",
+            "Text7Color",
+            "Text7ColorN",
+            "Text8Color",
+            "Text8ColorN",
+            "Text9Color",
+            "Text9ColorN",
+            "Text10Color",
+            "Text10ColorN",
+            "IconNow",
+            "IconFore",
+            "TempFore",
+            "WindFore",
+            "WindForeRound",
+            "TempForeLow",
+            "Text4Color",
+            "Text4ColorN",
+            "WindIconNow",
+            "WindIconAve",
+            "Text5Color",
+            "Text5ColorN",
+            "WindUnit",
+            "RightLeft",
+            "Rotate",
+            "MoonPhase",
+            "WEATHER_SUNRISE_KEY",
+            "Lat",
+            "Long",
+            "FontChoice",
+            "FrameColor2",
+            "FrameColor2N",
+            "Text6Color",
+            "Text6ColorN",
+            "WeatherTempPWS",
+            "WeatherWindPWS",
+            "WeatherWindRoundPWS",
+            "WindIconNowPWS",
+            "PWSAPIKEY_User",
+            "PWSStationID_User",
+            "UsePWS",
+            "RainTotalTodayPWS",
+            "RainRatePWS",
+            "PressurePWS",
+            "PressureUnit",
+            "RainUnit",
+            "rain0",
+            "rain5",
+            "rain10",
+            "rain15",
+            "rain20",
+            "rain25",
+            "rain30",
+            "rain35",
+            "rain40",
+            "rain45",
+            "rain50",
+            "rain55",
+            "rain60"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "fonts/Dripicons",
+                    "characterRegex": "[z]",
+                    "name": "FONT_DRIPICONS_16",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Weathericons",
+                    "characterRegex": "[]",
+                    "name": "FONT_WEATHERICONS_16",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Weathericons",
+                    "name": "FONT_WEATHERICONS_32",
+                    "targetPlatforms": [
+                        "aplite"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Weathericons",
+                    "name": "FONT_WEATHERICONS_32",
+                    "targetPlatforms": [
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100",
+                    "name": "FONT_LIZ_27",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100",
+                    "name": "FONT_LIZ_18",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100",
+                    "name": "FONT_LIZ_12",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "data/Johnston100W03-numbers.ffont",
+                    "name": "FONT_LIZ",
+                    "targetPlatforms": null,
+                    "type": "raw"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite"
+        ],
+        "uuid": "60dcdf42-fa02-4343-ae6b-b300a2687869",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "3.0.0"
+}
