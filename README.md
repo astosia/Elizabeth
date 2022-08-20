@@ -26,5 +26,12 @@ Tap or shake for:
 
 - Implementation of pmkey.xyz to store your api keys & retrieve them with a simple pin number.
 
+V3 adds in an option on Time Series & Pebble 2 watches to show local Personal Weather Station data from Weather Underground/The Weather Company.  Set up on the config page, and then shake or tap to display:
+- Current Temperature in °C or °F
+- Current Barometric Pressure in millibars (mb), inches of Mercury (Hg), millimeters of Mercury (mmHG), Pascals or Standard atmospheric (atm)
+- Total Rain amount today in mm or inches
+- If it's not raining currently, the left hand icon shows a thermometer.  If it is raining, it shows an umbrella
+- If there has been no rain today, right hand icon show a barometer.  If it has rained today, shows a raindrop
+
 Make elements the same colour as the background to hide them
 *steps on Time Series watches and Pebble 2 only
