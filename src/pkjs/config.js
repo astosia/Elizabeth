@@ -158,6 +158,34 @@ module.exports = [
         "label":"Moon Colour",
         "allowGray":true
       },
+      {
+       "type": "color",
+       "messageKey": "UVArcColor",
+       "defaultValue": "0xAAAAAA",
+       "label": "UV Arc background colour",
+       "allowGray":true
+      },
+      {
+       "type": "color",
+       "messageKey": "UVMaxColor",
+       "defaultValue": "0xFFFFFF",
+       "label": "UV Index Daily Max Bar",
+       "allowGray":true
+      },
+      {
+       "type": "color",
+       "messageKey": "UVNowColor",
+       "defaultValue": "0x555555",
+       "label": "UV Index Now Mark",
+       "allowGray":true
+      },
+      {
+       "type": "color",
+       "messageKey": "UVValColor",
+       "defaultValue": "0xFFFFFF",
+       "label": "UV Index Number",
+       "allowGray":true
+      },
     ]
   },
   {
@@ -294,7 +322,36 @@ module.exports = [
           "defaultValue":"0x000000",
           "label":"Moon Colour",
           "allowGray":true
-        }
+        },
+        {
+         "type": "color",
+         "messageKey": "UVArcColorN",
+         "defaultValue": "0x000000",
+         "label": "UV Arc background colour",
+         "allowGray":true
+        },
+        {
+         "type": "color",
+         "messageKey": "UVMaxColorN",
+         "defaultValue": "0x000000",
+         "label": "UV Index Daily Max Bar",
+         "allowGray":true
+        },
+        {
+         "type": "color",
+         "messageKey": "UVNowColorN",
+         "defaultValue": "0x000000",
+         "label": "UV Index Now Mark",
+         "allowGray":true
+        },
+        {
+         "type": "color",
+         "messageKey": "UVValColorN",
+         "defaultValue": "0x000000",
+         "label": "UV Index Number",
+         "allowGray":true
+        },
+
        ]
      },
   {
@@ -319,6 +376,12 @@ module.exports = [
             "messageKey": "WeatherUnit",
             "label": "Temperature in Fahrenheit",
             "defaultValue": false,
+          },
+          {
+            "type": "toggle",
+            "messageKey": "UseUVI",
+            "label": "Show UV Index (off) or Moophase (on)",
+            "defaultValue": true,
           },
             {
             "type": "select",
@@ -370,47 +433,51 @@ module.exports = [
           "max": 10,
           "step": 1
         },
-          {
-            "type": "select",
-            "messageKey": "WeatherProv",
-            "defaultValue": "owm",
-            "label": "Weather Provider",
-            "options": [
-              {
-                "label": "OpenWeatherMap",
-                "value": "owm"
-              }
-            ]
-          },
-          {
-             "type": "input",
-             "messageKey": "Lat",
-             "defaultValue": "",
-             "label": "Manual Location - Latitude",
-             "attributes": {
-             "placeholder": "eg: 51.4962"
-             }
-           },
-           {
-              "type": "input",
-              "messageKey": "Long",
-              "defaultValue": "",
-              "label": "Manual Location - Longitude",
-              "description": "Leave both blank to use GPS location for sunrise & sunset times and weather. You can use <a href =https://www.google.com/maps>Google Maps</a> or <a href =https://www.openstreetmap.org/>OpenStreetMap</a> to find latitude & longitude.",
-              "attributes": {
-                "placeholder": "eg: -0.0989"
-              }
+        {
+          "type": "select",
+          "messageKey": "WeatherProv",
+          "defaultValue": "ds",
+          "label": "Weather Provider",
+          "options": [
+            {
+              "label": "Open-Meteo",
+              "value": "ds"
             },
+            {
+              "label": "OpenWeatherMap",
+              "value": "owm"
+            }
+          ]
+        },
+        {
+           "type": "input",
+           "messageKey": "Lat",
+           "defaultValue": "",
+           "label": "Manual Location - Latitude",
+           "attributes": {
+           "placeholder": "eg: 51.4962 (leave blank to use GPS)"
+           }
+         },
          {
             "type": "input",
-            "messageKey": "APIKEY_User",
+            "messageKey": "Long",
             "defaultValue": "",
-            "label": "API Key",
-            "description": "If you don't have an api key, weather data will not be displayed. You can register for a free personal API key for <a href =https://home.openweathermap.org/users/sign_up/>OpenWeatherMap here</a>.",
+            "label": "Manual Location - Longitude",
+            "description": "Leave both blank to use GPS location for sunrise & sunset times and weather. You can use <a href =https://www.google.com/maps>Google Maps</a> or <a href =https://www.openstreetmap.org/>OpenStreetMap</a> to find latitude & longitude.",
             "attributes": {
-              "placeholder": "Paste your API Key here"
+              "placeholder": "eg: -0.0989 (leave blank to use GPS)"
             }
           },
+       {
+          "type": "input",
+          "messageKey": "APIKEY_User",
+          "defaultValue": "",
+          "label": "API Key",
+          "description": "Weather data uses Open-Meteo by default which does not require an API key.  If you prefer OpenWeatherMap, you can <a href =https://home.openweathermap.org/users/sign_up/>register for a free personal API key here</a>.",
+          "attributes": {
+            "placeholder": "Paste your OpenWeatherMap API Key here, or leave blank for Open-Meteo"
+          }
+        },
         ]
           },
           {
@@ -462,9 +529,9 @@ module.exports = [
                  "messageKey": "PWSAPIKEY_User",
                  "defaultValue": "",
                  "label": "Personal Weather Station API Key",
-                 "description": "Use this to access your Personal Weather Station data via Weather Underground/The Weather Company. If left blank, the watch will attempt to request the Weather Underground API from your pmkey.xyz",
+                 "description": "Use this to access Personal Weather Station data via Weather Underground/The Weather Company.",
                  "attributes": {
-                   "placeholder": "Paste PWS API Key, or blank if using pmkey"
+                   "placeholder": "Paste Weather Underground/The Weather Company API Key"
                  },
                  "capabilities":["MICROPHONE"]
                },
@@ -487,7 +554,7 @@ module.exports = [
           },
           {
           "type": "heading",
-          "defaultValue": "version v4.0",
+          "defaultValue": "version v6.0", 
           "size":6
           },
           {

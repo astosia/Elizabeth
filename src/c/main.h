@@ -41,6 +41,14 @@ typedef struct ClaySettings {
   GColor Text8ColorN;
   GColor Text9ColorN;
   GColor Text10ColorN;
+  GColor UVMaxColor;
+  GColor UVNowColor;
+  GColor UVArcColor;
+  GColor UVValColor;
+  GColor UVMaxColorN;
+  GColor UVNowColorN;
+  GColor UVArcColorN;
+  GColor UVValColorN;
   int WeatherUnit;
   char* WindUnit;
   int UpSlider;
@@ -75,6 +83,11 @@ typedef struct ClaySettings {
   char raintime24h[6];
   char raintime12h[6];
   char* RainUnit;
+  bool UseWeather;
+  bool UseUVI;
+  int UVIndexMax;
+  int UVIndexNow;
+  int UVIndexDay;
   #ifdef PBL_MICROPHONE
   bool UsePWS;
   char windstringpws[10];

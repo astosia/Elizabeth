@@ -107,6 +107,7 @@
             "PWSAPIKEY_User",
             "PWSStationID_User",
             "UsePWS",
+            "UseWeather",
             "RainTotalTodayPWS",
             "RainRatePWS",
             "PressurePWS",
@@ -124,36 +125,62 @@
             "rain45",
             "rain50",
             "rain55",
-            "rain60"
+            "rain60",
+            "UVMaxColor",
+            "UVNowColor",
+            "UVArcColor",
+            "UVValColor",
+            "UVMaxColorN",
+            "UVNowColorN",
+            "UVArcColorN",
+            "UVValColorN",
+            "UVIndexMax",
+            "UVIndexNow",
+            "UVIndexDay",
+            "UseUVI"
         ],
         "projectType": "native",
         "resources": {
             "media": [
                 {
-                    "file": "fonts/Dripicons",
+                    "file": "fonts/dripicons-v2.ttf",
                     "characterRegex": "[z]",
                     "name": "FONT_DRIPICONS_16",
                     "targetPlatforms": null,
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Weathericons",
+                    "file": "fonts/Weathericons.ttf",
                     "characterRegex": "[]",
                     "name": "FONT_WEATHERICONS_16",
-                    "targetPlatforms": null,
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Weathericons",
-                    "name": "FONT_WEATHERICONS_32",
+                    "file": "fonts/Weathericons.ttf",
+                    "characterRegex": "[]",
+                    "name": "FONT_WEATHERICONS_20",
+                    "targetPlatforms": [
+                        "emery"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Weathericons.ttf",
+                    "name": "FONT_WEATHERICONS_30",
                     "targetPlatforms": [
                         "aplite"
                     ],
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Weathericons",
-                    "name": "FONT_WEATHERICONS_32",
+                    "file": "fonts/Weathericons.ttf",
+                    "name": "FONT_WEATHERICONS_30",
                     "targetPlatforms": [
                         "basalt",
                         "chalk",
@@ -162,21 +189,87 @@
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Johnston100",
+                    "file": "fonts/Weathericons.ttf",
+                    "name": "FONT_WEATHERICONS_35",
+                    "targetPlatforms": [
+                        "emery"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_27",
-                    "targetPlatforms": null,
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Johnston100",
+                    "file": "fonts/Johnston100.ttf",
+                    "name": "FONT_LIZ_37",
+                    "targetPlatforms":[
+                        "emery"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_18",
-                    "targetPlatforms": null,
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
                     "type": "font"
                 },
                 {
-                    "file": "fonts/Johnston100",
+                    "file": "fonts/Johnston100.ttf",
+                    "name": "FONT_LIZ_24",
+                    "targetPlatforms": [
+                        "emery"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
+                    "name": "FONT_LIZ_14",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
+                    "name": "FONT_LIZ_19",
+                    "targetPlatforms": [
+                        "emery"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_12",
-                    "targetPlatforms": null,
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Johnston100.ttf",
+                    "name": "FONT_LIZ_16",
+                    "targetPlatforms": [
+                        "emery"
+                    ],
                     "type": "font"
                 },
                 {
@@ -192,12 +285,13 @@
             "aplite",
             "basalt",
             "chalk",
-            "diorite"
+            "diorite",
+            "emery"
         ],
         "uuid": "60dcdf42-fa02-4343-ae6b-b300a2687869",
         "watchapp": {
             "watchface": true
         }
     },
-    "version": "4.0.0"
+    "version": "6.0.0"
 }

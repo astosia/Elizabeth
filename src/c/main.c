@@ -8,7 +8,7 @@
 
 //Static and initial vars
 static GFont
-  FontDayOfTheWeekShortName, FontBTQTIcons, FontTemp, FontTempFore, FontWeatherIcons, FontWeatherCondition;// FontDate, FontSunset, FontMoonPhase,FontWindDirection;
+  FontDayOfTheWeekShortName, FontBTQTIcons, FontTemp, FontTempFore, FontUV, FontWeatherIcons, FontWeatherCondition;// FontDate, FontSunset, FontMoonPhase,FontWindDirection;
 
 FFont* time_font;
 
@@ -28,28 +28,349 @@ static Layer * s_canvas_rain;
 static GPath *s_rain_path = NULL;
 //#endif
 
-static int s_hours, s_minutes, s_weekday, s_day;// last one changed, s_loop;
+static int s_hours, s_minutes, s_weekday, s_day;
+//#ifdef PBL_MICROPHONE
+static int s_uvmax_level, s_uvnow_level;// last one changed, s_loop;
+//#endif
+
+typedef struct {
+  int TimebandHeight;
+  int HourX;
+  int HourY;
+  int MinuteX;
+  int MinuteY;
+  int DateX;
+  int DateY;
+  int BatteryBarX;
+  int BatteryBarY;
+  int BatteryBarW;
+  int BatteryBarH;
+  int MinFontEM;
+  int HourFontEM;
+  int DateFontEM;
+  GRect RainRect[1];
+  GRect DateRect[1];
+  GRect SunsetRect[1];
+  GRect SunriseRect[1];
+  GRect MoonRect[1];
+  GRect StepsRect[1];
+  GRect SunsetIconRect[1];
+  GRect SunriseIconRect[1];
+  GRect IconNowRect[1];
+  GRect IconForeRect[1];
+  GRect WindKtsRect[1];
+  GRect WindForeKtsRect[1];
+  GRect TempRect[1];
+  GRect PrecipRect[1];
+  GRect TempForeRect[1];
+  GRect WindDirNowRect[1];
+  GRect WindDirForeRect[1];
+  GRect BatteryRect[1];
+  GRect RainRateRect[1];
+  GRect PressureRect[1];
+  GRect BTIconRect[1];
+  GRect QTIconRect[1];
+  GRect UVDayValueRect[1];
+  GRect arc_bounds[1];
+  GRect arc_bounds_max[1];
+  GRect arc_bounds_now[1];
+} UIConfig;
+
+#ifdef PBL_PLATFORM_EMERY //emery aka Pebble Time 2
+static const UIConfig config = {
+  .TimebandHeight = 94,
+  .HourX = 79,
+  .HourY = 56-2,
+  .MinuteX = 78,
+  .MinuteY = 109,
+  .DateX = 62,
+  .DateY = 92,
+  .BatteryBarX = 0,
+  .BatteryBarY = 93,
+  .BatteryBarW = 200,
+  .BatteryBarH = 3,
+  .MinFontEM = 116, //ok
+  .HourFontEM = 54,
+  .DateFontEM = 30, //ok was 30 down to here
+  .RainRect = {{{25,106},{50,50}}}, //ok
+  .DateRect = {{{1,45},{62,48}}}, //ok
+  .SunsetRect = {{{133,200-4+2},{200/3,36}}}, //ok
+  .SunriseRect = {{{200/6,200-4+2},{200/3,36}}}, //ok
+  .MoonRect = {{{100,105+2+2},{100,76}}}, //ok
+  .StepsRect = {{{100,156+5},{100,36}}}, //ok
+  .SunsetIconRect = {{{100,200},{200/6,52}}}, //ok
+  .SunriseIconRect = {{{0,200},{200/6,52}}}, //ok
+  .IconNowRect = {{{0,105+2+2},{100,76}}}, //ok
+  .IconForeRect = {{{100,105+2+2},{100,76}}}, //ok
+  .WindKtsRect = {{{25,200-4+2},{75,36}}}, //ok
+  .WindForeKtsRect = {{{125,200-4+2},{75,36}}}, //ok
+  .TempRect = {{{-5,156-1},{111,36}}}, //ok
+  .PrecipRect = {{{0,161},{100,36}}}, //ok
+  .TempForeRect = {{{100,161},{100,36}}}, //ok
+  .WindDirNowRect = {{{0,185+8},{200/6,52}}}, //ok
+  .WindDirForeRect = {{{100,185+8},{200/6,52}}}, //ok
+  .BatteryRect = {{{0,93},{200,3}}}, //ok
+  .RainRateRect = {{{100,198},{100,36}}}, //ok
+  .PressureRect = {{{100,161},{100,36}}}, //ok
+  .BTIconRect ={{{68,109},{65,27}}}, //ok
+  .QTIconRect ={{{68,132},{65,27}}}, //ok
+ // .UVDayValueRect = {{{138,102},{25,25}}}, //ok
+  .UVDayValueRect = {{{136,117-2},{25,25}}},
+  .arc_bounds = {{{130,114-2},{38,38}}}, //ok
+  .arc_bounds_max = {{{127,111-2},{44,44}}}, //ok
+  .arc_bounds_now = {{{121,105-2},{56,56}}} //ok
+};
+#elif defined(PBL_BW) //aplite and diorite
+static const UIConfig config = {
+  .TimebandHeight = 69,
+  .HourX = 57,
+  .HourY = 41,
+  .MinuteX = 56,
+  .MinuteY = 80,
+  .DateX = 43-9+10,
+  .DateY = 70-3,
+  .BatteryBarX = 0,
+  .BatteryBarY = 68,
+  .BatteryBarW = 144,
+  .BatteryBarH = 2,
+  .MinFontEM = 85,
+  .HourFontEM = 40,
+  .DateFontEM = 22,
+  .RainRect = {{{18,78},{36,36}}},
+  .DateRect = {{{-2,33},{45,35}}},
+  .SunsetRect = {{{96,147},{144/3,27}}},
+  .SunriseRect = {{{144/6,144+3},{144/3,27}}},
+  .MoonRect = {{{72,77},{72,56}}},
+  .StepsRect = {{{72,115},{72,27}}},
+  .SunsetIconRect = {{{72,148},{144/6,38}}},
+  .SunriseIconRect = {{{0,148},{144/6,38}}},
+  .IconNowRect = {{{0,77},{72,56}}},
+  .IconForeRect = {{{72,77},{72,56}}},
+  .WindKtsRect = {{{18,146},{54,27}}},
+  .WindForeKtsRect = {{{90,146},{54,27}}},
+  .TempRect = {{{-4,115},{80,27}}},
+  .PrecipRect = {{{0,119},{72,27}}},
+  .TempForeRect = {{{72,119},{72,27}}},
+  .WindDirNowRect = {{{0,136},{144/6,38}}},
+  .WindDirForeRect = {{{72,136},{144/6,38}}},
+  .BatteryRect = {{{0,68},{144,2}}},
+  .RainRateRect = {{{72,146},{72,27}}},
+  .PressureRect = {{{72,119},{72,27}}},
+  .BTIconRect ={{{49,80},{47,20}}},
+  .QTIconRect ={{{49,97},{47,20}}}, //ok
+  .UVDayValueRect = {{{99,86},{18,18}}},
+  .arc_bounds = {{{94,84},{28,28}}},
+  .arc_bounds_max = {{{92,82},{32,32}}},
+  .arc_bounds_now = {{{88,78},{40,40}}}
+};
+#elif defined(PBL_ROUND) //chalk - NOT gabbro
+static const UIConfig config = {
+  .TimebandHeight = 88,
+  .HourX = 96-23-2+4,
+  .HourY = 127-34+2+2-35,
+  .MinuteX = 95-23-2+4,
+  .MinuteY = 127+39-34+2+2-35,
+  .DateX = 150-74-23+9-2-2+4+1,
+  .DateY = 133-13+2+2-35,
+  .BatteryBarX = 0,
+  .BatteryBarY = 50+75-2-35,
+  .BatteryBarW = 180,
+  .BatteryBarH = 2,
+  .MinFontEM = 85,
+  .HourFontEM = 40,
+  .DateFontEM = 22,
+  .RainRect = {{{49,106}, {32,32}}}, // The single GRect at index 0
+  .DateRect = {{{25-2-10-2-2+4+1,89-35},{48,20}}},
+  .SunsetRect = {{{99-4+27,133-8-37},{61,14}}},
+  .SunriseRect = {{{20+6-31+2,133-8-37},{61,14}}},
+  .MoonRect = {{{90-9-27+29-4,132-5+12-37+1-2},{18+54,56}}},
+  .StepsRect = {{{90-8,33+105},{90-16,30}}},
+  .SunsetIconRect = {{{113+30,150-3-36},{24,24}}},
+  .SunriseIconRect = {{{42-30,150-3-36},{24,24}}},
+  .IconNowRect = {{{0-26-2, 8+91-2+2},{180,32}}},
+  .IconForeRect = {{{0+26+3,130-31-2+2},{180,32}}},
+  .WindKtsRect = {{{94-115+2,26+6+2+56},{90-4,30}}},
+  .WindForeKtsRect = {{{94+20-1+1,180-30-24-2-34},{90-4,30}}},
+  .TempRect = {{{0+20-1,24+2+109},{90,30}}},
+  .PrecipRect = {{{16+12,33+105},{90-16,30}}},
+  .TempForeRect = {{{0+72+5,180-30-24-2+14},{90,30}}},
+  .WindDirNowRect = {{{78-99,12-4+95},{90,32}}},
+  .WindDirForeRect = {{{78+33+1,180-32-12-33},{90,32}}},
+  .BatteryRect = {{{0,50+75-2-35},{180,2}}},
+  .RainRateRect = {{{99-4+27,133-8-37},{61,14}}},
+  .PressureRect = {{{0+72+5,180-30-24-2+14},{90,30}}},
+  .BTIconRect ={{{90,4},{24,20}}},
+  .QTIconRect ={{{90-24,4},{24,20}}}, //ok
+  .UVDayValueRect = {{{0,90},{18,18}}},
+  .arc_bounds = {{{4,60},{28,28}}},
+  .arc_bounds_max = {{{2,58},{32,32}}},
+  .arc_bounds_now = {{{-2,54},{40,40}}}
+};
+#else // Default for other platforms, should only apply to Basalt
+static const UIConfig config = {
+  .TimebandHeight = 69,
+  .HourX = 57,
+  .HourY = 41,
+  .MinuteX = 56,
+  .MinuteY = 80,
+  .DateX = 43-9+10,
+  .DateY = 70-3,
+  .BatteryBarX = 0,
+  .BatteryBarY = 68,
+  .BatteryBarW = 144,
+  .BatteryBarH = 2,
+  .MinFontEM = 85,
+  .HourFontEM = 40,
+  .DateFontEM = 22,
+  .RainRect = {{{18,78},{36,36}}},
+  .DateRect = {{{-2,33},{45,35}}},
+  .SunsetRect = {{{96,147},{144/3,27}}},
+  .SunriseRect = {{{144/6,144+3},{144/3,27}}},
+  .MoonRect = {{{72,77},{72,56}}},
+  .StepsRect = {{{72,115},{72,27}}},
+  .SunsetIconRect = {{{72,148},{144/6,38}}},
+  .SunriseIconRect = {{{0,148},{144/6,38}}},
+  .IconNowRect = {{{0,77},{72,56}}},
+  .IconForeRect = {{{72,77},{72,56}}},
+  .WindKtsRect = {{{18,146},{54,27}}},
+  .WindForeKtsRect = {{{90,146},{54,27}}},
+  .TempRect = {{{-4,115},{80,27}}},
+  .PrecipRect = {{{0,119},{72,27}}},
+  .TempForeRect = {{{72,119},{72,27}}},
+  .WindDirNowRect = {{{0,136},{144/6,38}}},
+  .WindDirForeRect = {{{72,136},{144/6,38}}},
+  .BatteryRect = {{{0,68},{144,2}}},
+  .RainRateRect = {{{72,146},{72,27}}},
+  .PressureRect = {{{72,119},{72,27}}},
+  .BTIconRect ={{{49,80},{47,20}}},
+  .QTIconRect ={{{49,97},{47,20}}}, //ok
+  .UVDayValueRect = {{{99,86},{18,18}}},
+  .arc_bounds = {{{94,84},{28,28}}},
+  .arc_bounds_max = {{{92,82},{32,32}}},
+  .arc_bounds_now = {{{88,78},{40,40}}}
+};
+#endif
 
 static char* weather_conditions[] = {
   "\U0000F07B", // 'unknown': 0,
-  "\U0000F00D", // 'clear': 1,
-  "\U0000F00C", // 'fewclouds': 2,
-  "\U0000F041", // 'scattered clouds': 3,
-  "\U0000F013", // 'brokenclouds': 4,
-  "\U0000F019", // 'shower rain': 5,
-  "\U0000F008", // 'rain': 6,
-  "\U0000F076", // 'snow': 7,
-  "\U0000F016", // 'tstorms': 8,
-  "\U0000F021", // 'mist': 9,
-  "\U0000F02E", // 'nt_clear': 10,
-  "\U0000F081", // 'nt_few clouds': 11,
-  "\U0000F086", // 'nt_scattered clouds': 12,
-  "\U0000F013", // 'nt_broken clouds' : 13
-  "\U0000F019", // 'nt_shower rain': 14,
-  "\U0000F036", // 'nt_rain': 15,
-  "\U0000F076", // 'nt_snow': 16,
-  "\U0000F016", // 'nt_tstorms': 17,
-  "\U0000F021", // 'nt_mist': 18,
+  "\U0000f00e", //thunderstorm with light rain: 1
+  "\U0000f02c", //thunderstorm with light rain: 2
+  "\U0000f010", //thunderstorm with rain: 3
+  "\U0000f02d", //thunderstorm with rain: 4
+  "\U0000f01e", //thunderstorm with heavy rain: 5
+  "\U0000f01e", //thunderstorm with heavy rain: 6
+  "\U0000f005", //light thunderstorm: 7
+  "\U0000f025", //light thunderstorm: 8
+  "\U0000f01e", //thunderstorm: 9
+  "\U0000f01e", //thunderstorm: 10
+  "\U0000f01e", //heavy thunderstorm: 11
+  "\U0000f01e", //heavy thunderstorm: 12
+  "\U0000f01e", //ragged thunderstorm: 13
+  "\U0000f01e", //ragged thunderstorm: 14
+  "\U0000f00e", //thunderstorm with light drizzle: 15
+  "\U0000f02c", //thunderstorm with light drizzle: 16
+  "\U0000f00e", //thunderstorm with drizzle: 17
+  "\U0000f02c", //thunderstorm with drizzle: 18
+  "\U0000f01d", //thunderstorm with heavy drizzle: 19
+  "\U0000f01d", //thunderstorm with heavy drizzle: 20
+  "\U0000f00b", //light intensity drizzle: 21
+  "\U0000f02b", //light intensity drizzle: 22
+  "\U0000f01c", //drizzle: 23
+  "\U0000f01c", //drizzle: 24
+  "\U0000f01a", //heavy intensity drizzle: 25
+  "\U0000f01a", //heavy intensity drizzle: 26
+  "\U0000f00b", //light intensity drizzle rain: 27
+  "\U0000f02b", //light intensity drizzle rain: 28
+  "\U0000f00b", //drizzle rain: 29
+  "\U0000f029", //drizzle rain: 30
+  "\U0000f019", //heavy intensity drizzle rain: 31
+  "\U0000f019", //heavy intensity drizzle rain: 32
+  "\U0000f01a", //shower rain and drizzle: 33
+  "\U0000f01a", //shower rain and drizzle: 34
+  "\U0000f01a", //heavy shower rain and drizzle: 35
+  "\U0000f01a", //heavy shower rain and drizzle: 36
+  "\U0000f00b", //shower drizzle: 37
+  "\U0000f02b", //shower drizzle: 38
+  "\U0000f01a", //light rain: 39
+  "\U0000f01a", //light rain: 40
+  "\U0000f019", //moderate rain: 41
+  "\U0000f019", //moderate rain: 42
+  "\U0000f019", //heavy intensity rain: 43
+  "\U0000f019", //heavy intensity rain: 44
+  "\U0000f019", //very heavy rain: 45
+  "\U0000f019", //very heavy rain: 46
+  "\U0000f018", //extreme rain: 47
+  "\U0000f018", //extreme rain: 48
+  "\U0000f017", //freezing rain: 49
+  "\U0000f017", //freezing rain: 50
+  "\U0000f01a", //light intensity shower rain: 51
+  "\U0000f01a", //light intensity shower rain: 52
+  "\U0000f01a", //shower rain: 53
+  "\U0000f01a", //shower rain: 54
+  "\U0000f01a", //heavy intensity shower rain: 55
+  "\U0000f01a", //heavy intensity shower rain: 56
+  "\U0000f018", //ragged shower rain: 57
+  "\U0000f018", //ragged shower rain: 58
+  "\U0000f00a", //light snow: 59
+  "\U0000f02a", //light snow: 60
+  "\U0000f01b", //Snow: 61
+  "\U0000f01b", //Snow: 62
+  "\U0000f076", //Heavy snow: 63
+  "\U0000f076", //Heavy snow: 64
+  "\U0000f017", //Sleet: 65
+  "\U0000f017", //Sleet: 66
+  "\U0000f0b2", //Light shower sleet: 67
+  "\U0000f0b4", //Light shower sleet: 68
+  "\U0000f0b5", //Shower sleet: 69
+  "\U0000f0b5", //Shower sleet: 70
+  "\U0000f006", //Light rain and snow: 71
+  "\U0000f026", //Light rain and snow: 72
+  "\U0000f017", //Rain and snow: 73
+  "\U0000f017", //Rain and snow: 74
+  "\U0000f00a", //Light shower snow: 75
+  "\U0000f02a", //Light shower snow: 76
+  "\U0000f00a", //Shower snow: 77
+  "\U0000f02a", //Shower snow: 78
+  "\U0000f076", //Heavy shower snow: 79
+  "\U0000f076", //Heavy shower snow: 80
+  "\U0000f003", //mist: 81
+  "\U0000f04a", //mist: 82
+  "\U0000f062", //Smoke: 83
+  "\U0000f062", //Smoke: 84
+  "\U0000f0b6", //Haze: 85
+  "\U0000f023", //Haze: 86
+  "\U0000f082", //sand/ dust whirls: 87
+  "\U0000f082", //sand/ dust whirls: 88
+  "\U0000f014", //fog: 89
+  "\U0000f014", //fog: 90
+  "\U0000f082", //sand: 91
+  "\U0000f082", //sand: 92
+  "\U0000f082", //dust: 93
+  "\U0000f082", //dust: 94
+  "\U0000f0c8", //volcanic ash: 95
+  "\U0000f0c8", //volcanic ash: 96
+  "\U0000f011", //squalls: 97
+  "\U0000f011", //squalls: 98
+  "\U0000f056", //tornado: 99
+  "\U0000f056", //tornado: 100
+  "\U0000f00d", //clear sky: 101
+  "\U0000f02e", //clear sky: 102
+  "\U0000f00c", //few clouds: 11-25%: 103
+  "\U0000f081", //few clouds: 11-25%: 104
+  "\U0000f002", //scattered clouds: 25-50%: 105
+  "\U0000f086", //scattered clouds: 25-50%: 106
+  "\U0000f041", //broken clouds: 51-84%: 107
+  "\U0000f041", //broken clouds: 51-84%: 108
+  "\U0000f013", //overcast clouds: 85-100%: 109
+  "\U0000f013", //overcast clouds: 85-100%: 110
+  "\U0000f056", //tornado: 111
+  "\U0000f01d", //storm-showers: 112
+  "\U0000f073", //hurricane: 113
+  "\U0000f076", //snowflake-cold: 114
+  "\U0000f072", //hot: 115
+  "\U0000f050", //windy: 116
+  "\U0000f015", //hail: 117
+  "\U0000f050", //strong-wind: 118
 };
 
 static char* wind_direction[] = {
@@ -135,6 +456,14 @@ static void prv_default_settings(){
   settings.Text8Color = GColorWhite;
   settings.Text9Color = GColorWhite;
   settings.Text10Color = GColorWhite;
+  settings.UVMaxColor = GColorWhite;
+  settings.UVNowColor = GColorDarkGray;
+  settings.UVArcColor = GColorLightGray;
+  settings.UVValColor = GColorWhite;
+  settings.UVMaxColorN = GColorBlack;
+  settings.UVNowColorN = GColorDarkGray;
+  settings.UVArcColorN = GColorLightGray;
+  settings.UVValColorN = GColorBlack;
   settings.HourColor = GColorWhite;
   settings.MinColor = GColorWhite;
   settings.DateColor = GColorWhite;
@@ -145,6 +474,7 @@ static void prv_default_settings(){
   settings.Rainmultiplier = 3;
   settings.NightTheme = false;
   settings.HealthOff = true;
+  settings.UseUVI = true;
   #ifdef PBL_MICROPHONE
   settings.PressureUnit = 0;
   settings.UsePWS = false;
@@ -163,7 +493,7 @@ bool PWSDataExists=false;
 #endif
 bool IsNightNow=false;
 int showForecastWeather = 0;
-int s_countdown = 0;
+int s_countdown = 29;
 int s_loop = 0;
 
 
@@ -175,19 +505,6 @@ static GColor ColorSelect(GColor ColorDay, GColor ColorNight){
     return ColorDay;
   }
 }
-
-/*void request_watchjs(){
-  //Starting loop at 0
-  s_loop = 0;
-  // Begin dictionary
-  DictionaryIterator * iter;
-  app_message_outbox_begin( & iter);
-  // Add a key-value pair
-  dict_write_uint8(iter, 0, 0);
-  // Send the message!
-  app_message_outbox_send();
-}*/
-
 
 ///BT Connection
 static void bluetooth_callback(bool connected){
@@ -218,11 +535,6 @@ static void quiet_time_icon () {
 }
 
 
-//static void onreconnection(bool before, bool now){
-  //APP_LOG(APP_LOG_LEVEL_DEBUG, "void before BTOn is %d", before);
-  //APP_LOG(APP_LOG_LEVEL_DEBUG, "void Now BT connection is %d", now);
-//}
-
 static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   // A tap event occured
   //showForecastWeather = !showForecastWeather;
@@ -236,9 +548,7 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   layer_mark_dirty (s_canvas_weather_section);
   layer_mark_dirty (s_canvas_rain);
 //APP_LOG(APP_LOG_LEVEL_DEBUG, "show forecast weather is %d", showForecastWeather);
-
 }
-
 
 //Add in HEALTH to the watchface
 
@@ -282,7 +592,6 @@ static void display_step_count() {
       "%d", hundreds2);
   }
 //  layer_set_text(s_step_layer, s_current_steps_buffer);
-
 }
 
 
@@ -305,24 +614,24 @@ void layer_update_proc_background (Layer * back_layer, GContext * ctx){
 
   GRect TimeBand =
     PBL_IF_ROUND_ELSE(
-      GRect(0, 0, bounds.size.w, 88),
-      GRect(0, 0, bounds.size.w, 69));
+      GRect(0, 0, bounds.size.w, config.TimebandHeight),
+      GRect(0, 0, bounds.size.w, config.TimebandHeight));
 
       graphics_context_set_fill_color(ctx, ColorSelect(settings.FrameColor, settings.FrameColorN));
       graphics_fill_rect(ctx, ComplicationsBand,0,GCornersAll);
       graphics_context_set_fill_color(ctx, ColorSelect(settings.FrameColor2, settings.FrameColor2N));
       graphics_fill_rect(ctx, TimeBand,0,GCornersAll);
-
 }
 
 void update_time_area_layer(Layer *l, GContext* ctx) {
+
+  GRect bounds = layer_get_bounds(l);
   // check layer bounds
   #ifdef PBL_ROUND
-     GRect bounds = layer_get_unobstructed_bounds(l);
      bounds = GRect(0, 0,bounds.size.w, bounds.size.h);
   #else
-     GRect bounds = GRect (0,0,144,80);
-     bounds = GRect(0,0,bounds.size.w,bounds.size.h);
+    //  GRect bounds = GRect (0,0,144,80);
+     bounds = GRect(0,0,bounds.size.w,config.TimebandHeight);
   #endif
 
   FContext fctx;
@@ -330,16 +639,10 @@ void update_time_area_layer(Layer *l, GContext* ctx) {
   fctx_init_context(&fctx, ctx);
   fctx_set_color_bias(&fctx, 0);
 
-  #ifdef PBL_MICROPHONE
-  int font_size_hour = 40;
-  int font_size_min = 85;
-  int font_size_date = 22;
-  #else
-  int font_size_hour = 40;
-  int font_size_min = 85;
-  int font_size_date = 22;
-  #endif
-
+  int font_size_hour = config.HourFontEM;
+  int font_size_min = config.MinFontEM;
+  int font_size_date = config.DateFontEM;
+  
   #ifdef PBL_COLOR
     fctx_enable_aa(true);
   #endif
@@ -375,8 +678,8 @@ void update_time_area_layer(Layer *l, GContext* ctx) {
   fctx_begin_fill(&fctx);
   fctx_set_text_em_height(&fctx, time_font, font_size_hour);
 
-  hour_pos.x = INT_TO_FIXED(PBL_IF_ROUND_ELSE(96-23-2+4, 57) );
-  hour_pos.y = INT_TO_FIXED(PBL_IF_ROUND_ELSE(127-34+2+2-35, 41));
+  hour_pos.x = INT_TO_FIXED(config.HourX);
+  hour_pos.y = INT_TO_FIXED(config.HourY);
 
   fctx_set_offset(&fctx, hour_pos);
 
@@ -391,8 +694,8 @@ void update_time_area_layer(Layer *l, GContext* ctx) {
 
   fctx_set_text_em_height(&fctx, time_font, font_size_min);
 
-  min_pos.x = INT_TO_FIXED(PBL_IF_ROUND_ELSE(95-23-2+4, 56));
-  min_pos.y = INT_TO_FIXED(PBL_IF_ROUND_ELSE(127+39-34+2+2-35 , 80));
+  min_pos.x = INT_TO_FIXED(config.MinuteX);
+  min_pos.y = INT_TO_FIXED(config.MinuteY);
 
   fctx_set_offset(&fctx, min_pos);
 
@@ -407,8 +710,8 @@ void update_time_area_layer(Layer *l, GContext* ctx) {
 
   fctx_set_text_em_height(&fctx, time_font, font_size_date);
 
-  date_pos.x = INT_TO_FIXED(PBL_IF_ROUND_ELSE(150-74-23+9-2-2+4+1, 43-9+10));
-  date_pos.y = INT_TO_FIXED(PBL_IF_ROUND_ELSE(133-13+2+2-35, 70-3));
+  date_pos.x = INT_TO_FIXED(config.DateX);
+  date_pos.y = INT_TO_FIXED(config.DateY);
 
   fctx_set_offset(&fctx, date_pos);
 
@@ -419,515 +722,222 @@ void update_time_area_layer(Layer *l, GContext* ctx) {
 }
 
 
-#ifdef PBL_MICROPHONE
 static void layer_update_proc_rain (Layer * layer, GContext * ctx){
 
-if (
-    (showForecastWeather == 5) ||
-    (showForecastWeather == 2 && PWSDataExists && settings.UsePWS) ||
-    (showForecastWeather == 1 && (!settings.UsePWS || !PWSDataExists)) ||
-    (showForecastWeather == 3 && (!settings.UsePWS || !PWSDataExists))
-    )
-    {
-      GRect bounds =
-         (PBL_IF_ROUND_ELSE(
-           GRect(90-16-29+4,4+101+1,32,32),
-           GRect(18,78,36,36)));
-      GPoint center = grect_center_point(&bounds);
-      const int16_t rain_bar_max_length = bounds.size.w/2;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain_bar is %d",rain_bar_max_length);
-          //30 min rain amount
-      int multiplier = settings.Rainmultiplier;
-      int multiplier2 = 3;
-      int s_rain0 = settings.rain0;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain0 is %d",s_rain0);
-      int s_0_len = (s_rain0 * multiplier/100);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "s_0_len is %d",s_0_len);
-      int32_t rain_0_angle = TRIG_MAX_ANGLE * 60/60;
+  #ifdef PBL_MICROPHONE
+    if ((showForecastWeather == 5) ||
+        (showForecastWeather == 2 && PWSDataExists && settings.UsePWS) ||
+        (showForecastWeather == 1 && (!settings.UsePWS || !PWSDataExists)) ||
+        (showForecastWeather == 3 && (!settings.UsePWS || !PWSDataExists))) {
+  #else
+    if ((showForecastWeather == 1 ||showForecastWeather == 3 || showForecastWeather == 5)) {
+  #endif
+    
+    GRect bounds = config.RainRect[0];
+    
+    GPoint center = grect_center_point(&bounds);
+    const int16_t rain_bar_max_length = bounds.size.w/2;
+    int multiplier = settings.Rainmultiplier;
+    int multiplier2 = 3;
 
-      int s_rain5 = settings.rain5;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain5 is %d",s_rain5);
-      int s_5_len = (s_rain5 * multiplier/100);
-      int32_t rain_5_angle = TRIG_MAX_ANGLE * 5/60;
-
-      int s_rain10 = settings.rain10;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain10 is %d",s_rain10);
-      int s_10_len = (s_rain10 * multiplier/100);
-      int32_t rain_10_angle = TRIG_MAX_ANGLE * 10/60;
-
-      int s_rain15 = settings.rain15;
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "rain15 is %d",s_rain15);
-      int s_15_len = (s_rain15 * multiplier/100);
-      int32_t rain_15_angle = TRIG_MAX_ANGLE * 15/60;
-
-      int s_rain20 = settings.rain20;
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "rain20 is %d",s_rain20);
-      int s_20_len = (s_rain20 * multiplier/100);
-      int32_t rain_20_angle = TRIG_MAX_ANGLE * 20/60;
-
-      int s_rain25 = settings.rain25;
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "rain25 is %d",s_rain25);
-      int s_25_len = (s_rain25 * multiplier/100);
-      int32_t rain_25_angle = TRIG_MAX_ANGLE * 25/60;
-
-      int s_rain30 = settings.rain30;
-            APP_LOG(APP_LOG_LEVEL_DEBUG, "rain30 is %d",s_rain30);
-      int s_30_len = (s_rain30 * multiplier/100);
-      int32_t rain_30_angle = TRIG_MAX_ANGLE * 30/60;
-
-      int s_rain35 = settings.rain35;
-      int s_35_len = (s_rain35 * multiplier/100);
-      int32_t rain_35_angle = TRIG_MAX_ANGLE * 35/60;
-
-      int s_rain40 = settings.rain40;
-      int s_40_len = (s_rain40 * multiplier/100);
-      int32_t rain_40_angle = TRIG_MAX_ANGLE * 40/60;
-
-      int s_rain45 = settings.rain45;
-      int s_45_len = (s_rain45 * multiplier/100);
-      int32_t rain_45_angle = TRIG_MAX_ANGLE * 45/60;
-
-      int s_rain50 = settings.rain50;
-      int s_50_len = (s_rain50 * multiplier/100);
-      int32_t rain_50_angle = TRIG_MAX_ANGLE * 50/60;
-
-      int s_rain55 = settings.rain55;
-      int s_55_len = (s_rain55 * multiplier/100);
-      int32_t rain_55_angle = TRIG_MAX_ANGLE * 55/60;
-
-      int s_rain60 = settings.rain60;
-      int s_60_len = (s_rain60 * multiplier/100);
-      int32_t rain_60_angle = TRIG_MAX_ANGLE * 60/60;
-
-    GPoint rain_0_1 = {
-      .x = (int16_t)(sin_lookup(rain_0_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_0_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
+    // Use an array to store the rain data to avoid code repetition
+    int rain_data[] = {
+      settings.rain0, settings.rain5, settings.rain10, settings.rain15,
+      settings.rain20, settings.rain25, settings.rain30, settings.rain35,
+      settings.rain40, settings.rain45, settings.rain50, settings.rain55,
+      settings.rain60
     };
 
-    GPoint rain_0 = {
-      .x = (int16_t)(sin_lookup(rain_0_angle)*(int32_t)s_0_len/TRIG_MAX_RATIO) + rain_0_1.x,
-      .y = (int16_t)(-cos_lookup(rain_0_angle)*(int32_t)s_0_len/TRIG_MAX_RATIO) + rain_0_1.y,
-    };
-
-    GPoint rain_5_1 = {
-      .x = (int16_t)(sin_lookup(rain_5_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_5_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_5 = {
-      .x = (int16_t)(sin_lookup(rain_5_angle)*(int32_t)s_5_len/TRIG_MAX_RATIO) + rain_5_1.x,
-      .y = (int16_t)(-cos_lookup(rain_5_angle)*(int32_t)s_5_len/TRIG_MAX_RATIO) + rain_5_1.y,
-    };
-
-    GPoint rain_10_1 = {
-      .x = (int16_t)(sin_lookup(rain_10_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_10_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_10 = {
-      .x = (int16_t)(sin_lookup(rain_10_angle)*(int32_t)s_10_len/TRIG_MAX_RATIO) + rain_10_1.x,
-      .y = (int16_t)(-cos_lookup(rain_10_angle)*(int32_t)s_10_len/TRIG_MAX_RATIO) + rain_10_1.y,
-    };
-
-    GPoint rain_15_1 = {
-      .x = (int16_t)(sin_lookup(rain_15_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_15_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_15 = {
-      .x = (int16_t)(sin_lookup(rain_15_angle)*(int32_t)s_15_len/TRIG_MAX_RATIO) + rain_15_1.x,
-      .y = (int16_t)(-cos_lookup(rain_15_angle)*(int32_t)s_15_len/TRIG_MAX_RATIO) + rain_15_1.y,
-    };
-
-    GPoint rain_20_1 = {
-      .x = (int16_t)(sin_lookup(rain_20_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_20_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_20 = {
-      .x = (int16_t)(sin_lookup(rain_20_angle)*(int32_t)s_20_len/TRIG_MAX_RATIO) + rain_20_1.x,
-      .y = (int16_t)(-cos_lookup(rain_20_angle)*(int32_t)s_20_len/TRIG_MAX_RATIO) + rain_20_1.y,
-    };
-
-    GPoint rain_25_1 = {
-      .x = (int16_t)(sin_lookup(rain_25_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_25_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_25 = {
-      .x = (int16_t)(sin_lookup(rain_25_angle)*(int32_t)s_25_len/TRIG_MAX_RATIO) + rain_25_1.x,
-      .y = (int16_t)(-cos_lookup(rain_25_angle)*(int32_t)s_25_len/TRIG_MAX_RATIO) + rain_25_1.y,
-    };
-
-    GPoint rain_30_1 = {
-      .x = (int16_t)(sin_lookup(rain_30_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_30_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_30 = {
-      .x = (int16_t)(sin_lookup(rain_30_angle)*(int32_t)s_30_len/TRIG_MAX_RATIO) + rain_30_1.x,
-      .y = (int16_t)(-cos_lookup(rain_30_angle)*(int32_t)s_30_len/TRIG_MAX_RATIO) + rain_30_1.y,
-    };
-
-    GPoint rain_35_1 = {
-      .x = (int16_t)(sin_lookup(rain_35_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_35_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_35 = {
-      .x = (int16_t)(sin_lookup(rain_35_angle)*(int32_t)s_35_len/TRIG_MAX_RATIO) + rain_35_1.x,
-      .y = (int16_t)(-cos_lookup(rain_35_angle)*(int32_t)s_35_len/TRIG_MAX_RATIO) + rain_35_1.y,
-    };
-
-    GPoint rain_40_1 = {
-      .x = (int16_t)(sin_lookup(rain_40_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_40_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_40 = {
-      .x = (int16_t)(sin_lookup(rain_40_angle)*(int32_t)s_40_len/TRIG_MAX_RATIO) + rain_40_1.x,
-      .y = (int16_t)(-cos_lookup(rain_40_angle)*(int32_t)s_40_len/TRIG_MAX_RATIO) + rain_40_1.y,
-    };
-
-    GPoint rain_45_1 = {
-      .x = (int16_t)(sin_lookup(rain_45_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_45_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_45 = {
-      .x = (int16_t)(sin_lookup(rain_45_angle)*(int32_t)s_45_len/TRIG_MAX_RATIO) + rain_45_1.x,
-      .y = (int16_t)(-cos_lookup(rain_45_angle)*(int32_t)s_45_len/TRIG_MAX_RATIO) + rain_45_1.y,
-    };
-
-    GPoint rain_50_1 = {
-      .x = (int16_t)(sin_lookup(rain_50_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_50_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_50 = {
-      .x = (int16_t)(sin_lookup(rain_50_angle)*(int32_t)s_50_len/TRIG_MAX_RATIO) + rain_50_1.x,
-      .y = (int16_t)(-cos_lookup(rain_50_angle)*(int32_t)s_50_len/TRIG_MAX_RATIO) + rain_50_1.y,
-    };
-
-    GPoint rain_55_1 = {
-      .x = (int16_t)(sin_lookup(rain_55_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_55_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_55 = {
-      .x = (int16_t)(sin_lookup(rain_55_angle)*(int32_t)s_55_len/TRIG_MAX_RATIO) + rain_55_1.x,
-      .y = (int16_t)(-cos_lookup(rain_55_angle)*(int32_t)s_55_len/TRIG_MAX_RATIO) + rain_55_1.y,
-    };
-
-    GPoint rain_60_1 = {
-      .x = (int16_t)(sin_lookup(rain_60_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_60_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_60 = {
-      .x = (int16_t)(sin_lookup(rain_60_angle)*(int32_t)s_60_len/TRIG_MAX_RATIO) + rain_60_1.x,
-      .y = (int16_t)(-cos_lookup(rain_60_angle)*(int32_t)s_60_len/TRIG_MAX_RATIO) + rain_60_1.y,
-    };
-
-    graphics_context_set_stroke_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-    graphics_context_set_fill_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-
-    const GPathInfo Rain_path_info = {
-      .num_points = 13,
-      .points = (GPoint []) {
-        {rain_0.x,rain_0.y},
-        {rain_5.x,rain_5.y},
-        {rain_10.x,rain_10.y},
-        {rain_15.x,rain_15.y},
-        {rain_20.x,rain_20.y},
-        {rain_25.x,rain_25.y},
-        {rain_30.x,rain_30.y},
-        {rain_35.x,rain_35.y},
-        {rain_40.x,rain_40.y},
-        {rain_45.x,rain_45.y},
-        {rain_50.x,rain_50.y},
-        {rain_55.x,rain_55.y},
-        {rain_60.x,rain_60.y}}
-    };
-
-    s_rain_path = gpath_create(&Rain_path_info);
-
-    gpath_draw_filled(ctx,s_rain_path);
-    gpath_draw_outline(ctx,s_rain_path);
-
-
-    graphics_context_set_fill_color(ctx,ColorSelect(settings.FrameColor,settings.FrameColorN));
-    graphics_fill_circle(ctx,center,rain_bar_max_length/multiplier2);
-
-    graphics_context_set_stroke_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-    graphics_context_set_stroke_width(ctx,1);
-    graphics_draw_circle(ctx,center,rain_bar_max_length/multiplier2);
-
-    gpath_destroy(s_rain_path);
-}
-}
-
-#else
-static void layer_update_proc_rain (Layer * layer, GContext * ctx){
-
-if ((showForecastWeather == 1 ||showForecastWeather == 3 || showForecastWeather == 5))
-    {
-      GRect bounds = GRect(18,78,36,36);
-      GPoint center = grect_center_point(&bounds);
-      const int16_t rain_bar_max_length = bounds.size.w/2;
-      //APP_LOG(APP_LOG_LEVEL_DEBUG, "rain_bar is %d",rain_bar_max_length);
-          //30 min rain amount
-      int multiplier = settings.Rainmultiplier;
-      int multiplier2 = 3;
-
-      int s_rain0 = settings.rain0;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain0 is %d",s_rain0);
-      int s_0_len = (s_rain0 * multiplier/100);
-      //APP_LOG(APP_LOG_LEVEL_DEBUG, "s_0_len is %d",s_0_len);
-      int32_t rain_0_angle = TRIG_MAX_ANGLE * 60/60;
-
-      int s_rain10 = settings.rain10;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain10 is %d",s_rain10);
-      int s_10_len = (s_rain10 * multiplier/100);
-      int32_t rain_10_angle = TRIG_MAX_ANGLE * 10/60;
-
-      int s_rain20 = settings.rain20;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "rain20 is %d",s_rain20);
-      int s_20_len = (s_rain20 * multiplier/100);
-      int32_t rain_20_angle = TRIG_MAX_ANGLE * 20/60;
-
-      int s_rain30 = settings.rain30;
-      int s_30_len = (s_rain30 * multiplier/100);
-      int32_t rain_30_angle = TRIG_MAX_ANGLE * 30/60;
-
-      int s_rain40 = settings.rain40;
-      int s_40_len = (s_rain40 * multiplier/100);
-      int32_t rain_40_angle = TRIG_MAX_ANGLE * 40/60;
-
-      int s_rain50 = settings.rain50;
-      int s_50_len = (s_rain50 * multiplier/100);
-      int32_t rain_50_angle = TRIG_MAX_ANGLE * 50/60;
-
-      int s_rain60 = settings.rain60;
-      int s_60_len = (s_rain60 * multiplier/100);
-      int32_t rain_60_angle = TRIG_MAX_ANGLE * 60/60;
-
-
-
-    GPoint rain_0_1 = {
-      .x = (int16_t)(sin_lookup(rain_0_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_0_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_0 = {
-      .x = (int16_t)(sin_lookup(rain_0_angle)*(int32_t)s_0_len/TRIG_MAX_RATIO) + rain_0_1.x,
-      .y = (int16_t)(-cos_lookup(rain_0_angle)*(int32_t)s_0_len/TRIG_MAX_RATIO) + rain_0_1.y,
-    };
-
-    GPoint rain_10_1 = {
-      .x = (int16_t)(sin_lookup(rain_10_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_10_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_10 = {
-      .x = (int16_t)(sin_lookup(rain_10_angle)*(int32_t)s_10_len/TRIG_MAX_RATIO) + rain_10_1.x,
-      .y = (int16_t)(-cos_lookup(rain_10_angle)*(int32_t)s_10_len/TRIG_MAX_RATIO) + rain_10_1.y,
-    };
-
-    GPoint rain_20_1 = {
-      .x = (int16_t)(sin_lookup(rain_20_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_20_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_20 = {
-      .x = (int16_t)(sin_lookup(rain_20_angle)*(int32_t)s_20_len/TRIG_MAX_RATIO) + rain_20_1.x,
-      .y = (int16_t)(-cos_lookup(rain_20_angle)*(int32_t)s_20_len/TRIG_MAX_RATIO) + rain_20_1.y,
-    };
-
-    GPoint rain_30_1 = {
-      .x = (int16_t)(sin_lookup(rain_30_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_30_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_30 = {
-      .x = (int16_t)(sin_lookup(rain_30_angle)*(int32_t)s_30_len/TRIG_MAX_RATIO) + rain_30_1.x,
-      .y = (int16_t)(-cos_lookup(rain_30_angle)*(int32_t)s_30_len/TRIG_MAX_RATIO) + rain_30_1.y,
-    };
-
-    GPoint rain_40_1 = {
-      .x = (int16_t)(sin_lookup(rain_40_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_40_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_40 = {
-      .x = (int16_t)(sin_lookup(rain_40_angle)*(int32_t)s_40_len/TRIG_MAX_RATIO) + rain_40_1.x,
-      .y = (int16_t)(-cos_lookup(rain_40_angle)*(int32_t)s_40_len/TRIG_MAX_RATIO) + rain_40_1.y,
-    };
-
-    GPoint rain_50_1 = {
-      .x = (int16_t)(sin_lookup(rain_50_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_50_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_50 = {
-      .x = (int16_t)(sin_lookup(rain_50_angle)*(int32_t)s_50_len/TRIG_MAX_RATIO) + rain_50_1.x,
-      .y = (int16_t)(-cos_lookup(rain_50_angle)*(int32_t)s_50_len/TRIG_MAX_RATIO) + rain_50_1.y,
-    };
-
-    GPoint rain_60_1 = {
-      .x = (int16_t)(sin_lookup(rain_60_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.x,
-      .y = (int16_t)(-cos_lookup(rain_60_angle)*(int32_t)rain_bar_max_length/multiplier2/TRIG_MAX_RATIO)+ center.y,
-    };
-
-    GPoint rain_60 = {
-      .x = (int16_t)(sin_lookup(rain_60_angle)*(int32_t)s_60_len/TRIG_MAX_RATIO) + rain_60_1.x,
-      .y = (int16_t)(-cos_lookup(rain_60_angle)*(int32_t)s_60_len/TRIG_MAX_RATIO) + rain_60_1.y,
-    };
-
-    graphics_context_set_stroke_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-    graphics_context_set_fill_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-
-    const GPathInfo Rain_path_info = {
-      .num_points = 7,
-      .points = (GPoint []) {
-        {rain_0.x,rain_0.y},
-        {rain_10.x,rain_10.y},
-        {rain_20.x,rain_20.y},
-        {rain_30.x,rain_30.y},
-        {rain_40.x,rain_40.y},
-        {rain_50.x,rain_50.y},
-        {rain_60.x,rain_60.y}}
-    };
-
-    s_rain_path = gpath_create(&Rain_path_info);
-
-    gpath_draw_filled(ctx,s_rain_path);
-    gpath_draw_outline(ctx,s_rain_path);
-
-    graphics_context_set_fill_color(ctx,ColorSelect(settings.FrameColor,settings.FrameColorN));
-    graphics_fill_circle(ctx,center,rain_bar_max_length/multiplier2);
-
-    graphics_context_set_stroke_color(ctx,ColorSelect(settings.Text7Color,settings.Text7ColorN));
-    graphics_context_set_stroke_width(ctx,1);
-    graphics_draw_circle(ctx,center,rain_bar_max_length/multiplier2);
-
-    gpath_destroy(s_rain_path);
-
+    int num_points = 0;
+    GPoint points[13];
+
+    #ifdef PBL_MICROPHONE
+      // All 13 points are used for this version
+      num_points = 13;
+    #else
+      // Only 7 points (0, 10, 20, 30, 40, 50, 60) are used for this version
+      num_points = 7;
+    #endif
+
+    // Calculate the GPoints dynamically in a loop
+    for (int i = 0; i < num_points; ++i) {
+      int minutes_step;
+      #ifdef PBL_MICROPHONE
+        minutes_step = i * 5;
+      #else
+        minutes_step = i * 10;
+      #endif
+
+      int rain_value = rain_data[minutes_step / 5];
+      int rain_length = (rain_value * multiplier / 100);
+      int32_t rain_angle = TRIG_MAX_ANGLE * minutes_step / 60;
+
+      GPoint base_point = {
+        .x = (int16_t)(sin_lookup(rain_angle) * rain_bar_max_length / multiplier2 / TRIG_MAX_RATIO) + center.x,
+        .y = (int16_t)(-cos_lookup(rain_angle) * rain_bar_max_length / multiplier2 / TRIG_MAX_RATIO) + center.y,
+      };
+
+      points[i] = (GPoint){
+        .x = (int16_t)(sin_lookup(rain_angle) * rain_length / TRIG_MAX_RATIO) + base_point.x,
+        .y = (int16_t)(-cos_lookup(rain_angle) * rain_length / TRIG_MAX_RATIO) + base_point.y,
+      };
     }
-  }
 
-#endif
+    graphics_context_set_stroke_color(ctx, ColorSelect(settings.Text7Color, settings.Text7ColorN));
+    graphics_context_set_fill_color(ctx, ColorSelect(settings.Text7Color, settings.Text7ColorN));
+
+    const GPathInfo Rain_path_info = {
+      .num_points = num_points,
+      .points = points
+    };
+
+    s_rain_path = gpath_create(&Rain_path_info);
+
+    gpath_draw_filled(ctx, s_rain_path);
+    gpath_draw_outline(ctx, s_rain_path);
+
+    graphics_context_set_fill_color(ctx, ColorSelect(settings.FrameColor, settings.FrameColorN));
+    graphics_fill_circle(ctx, center, rain_bar_max_length / multiplier2);
+
+    graphics_context_set_stroke_color(ctx, ColorSelect(settings.Text7Color, settings.Text7ColorN));
+    graphics_context_set_stroke_width(ctx, 1);
+    graphics_draw_circle(ctx, center, rain_bar_max_length / multiplier2);
+
+    gpath_destroy(s_rain_path);
+  }
+}
+
 
 
 static void layer_update_proc(Layer * layer, GContext * ctx){
+
+GRect DateRect = config.DateRect[0];
+GRect SunsetRect = config.SunsetRect[0];
+GRect SunriseRect = config.SunriseRect[0];
+GRect MoonRect = config.MoonRect[0]; 
+GRect StepsRect = config.StepsRect[0]; 
+GRect SunsetIconRect = config.SunsetIconRect[0];
+GRect SunriseIconRect = config.SunriseIconRect[0];
+GRect IconNowRect = config.IconNowRect[0]; 
+GRect IconForeRect = config.IconForeRect[0];
+GRect WindKtsRect = config.WindKtsRect[0];
+GRect WindForeKtsRect = config.WindForeKtsRect[0];
+GRect TempRect = config.TempRect[0];
+GRect PrecipRect = config.PrecipRect[0];
+GRect TempForeRect = config.TempForeRect[0];
+GRect WindDirNowRect = config.WindDirNowRect[0];
+GRect WindDirForeRect = config.WindDirForeRect[0];
+GRect BatteryRect = config.BatteryRect[0]; 
+
+
 //add in weather info
-GRect DateRect =
-  (PBL_IF_ROUND_ELSE(
-     GRect(25-2-10-2-2+4+1, 89-35, 48, 20),
-     GRect(0-2, 36-4+1, 45, 35)));
+// GRect DateRect =
+//   (PBL_IF_ROUND_ELSE(
+//      GRect(25-2-10-2-2+4+1, 89-35, 48, 20),
+//      GRect(0-2, 36-4+1, 45, 35)));
 
-GRect SunsetRect =
-  (PBL_IF_ROUND_ELSE(
-     GRect(99-4+27,133-8-37,61,14),
-     GRect(96,144+3,144/3,27)));
+// GRect SunsetRect =
+//   (PBL_IF_ROUND_ELSE(
+//      GRect(99-4+27,133-8-37,61,14),
+//      GRect(96,144+3,144/3,27)));
 
-GRect SunriseRect =
-   (PBL_IF_ROUND_ELSE(
-     GRect(20+6-31+2,133-8-37,61,14),
-     GRect(144/6,144+3,144/3,27)));
+// GRect SunriseRect =
+//    (PBL_IF_ROUND_ELSE(
+//      GRect(20+6-31+2,133-8-37,61,14),
+//      GRect(144/6,144+3,144/3,27)));
 
-GRect MoonRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(90-9-27+29-4,132-5+12-37+1-2,18+54,56),
-      GRect(72, 68+9, 72,56)));
+//      GRect MoonRect =
+//          (PBL_IF_ROUND_ELSE(
+//            GRect(90-9-27+29-4,132-5+12-37+1-2,18+54,56),
+//            GRect(72, 68+9, 72,56)));
 
- GRect StepsRect =
-   (PBL_IF_ROUND_ELSE(
-     (GRect(90-8,33+105,90-16,30)),
-     (GRect(72,118-3+4,144/2,27))));
+//  GRect StepsRect =
+//    (PBL_IF_ROUND_ELSE(
+//      (GRect(90-8,33+105,90-16,30)),
+//      (GRect(72,118-3+4,144/2,27))));
 
- GRect SunsetIconRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(113+30,150-3-36,24,24),
-      GRect(72,146+2,144/6,38)));
+//  GRect SunsetIconRect =
+//     (PBL_IF_ROUND_ELSE(
+//       GRect(113+30,150-3-36,24,24),
+//       GRect(72,146+2,144/6,38)));
 
-  GRect SunriseIconRect =
-     (PBL_IF_ROUND_ELSE(
-       GRect(42-30,150-3-36,24,24),
-       GRect(0,146+2,144/6,38)));
-
-
-GRect IconNowRect = //weather condition icon
-     (PBL_IF_ROUND_ELSE(
-     GRect(0-26-2, 8+91-2+2,180,32),
-     GRect(0, 68+9, 72,56)));
-
-GRect IconForeRect = //weather condition icon
-      (PBL_IF_ROUND_ELSE(
-      GRect(0+26+3,130-31-2+2,180,32),
-      GRect(72, 68+9, 72,56)));
+//   GRect SunriseIconRect =
+//      (PBL_IF_ROUND_ELSE(
+//        GRect(42-30,150-3-36,24,24),
+//        GRect(0,146+2,144/6,38)));
 
 
-/*GRect Icon1hRect = //weather condition icon next hour INSTEAD OF RAIN
-      (PBL_IF_ROUND_ELSE(
-      GRect(0-26-2, 8+91-2+2,180,32),
-      GRect(0, 68+9, 72,56)));*/
+// GRect IconNowRect = //weather condition icon
+//      (PBL_IF_ROUND_ELSE(
+//      GRect(0-26-2, 8+91-2+2,180,32),
+//      GRect(0, 68+9, 72,56)));
 
-GRect WindKtsRect =  //windspeed number
-     (PBL_IF_ROUND_ELSE(
-     (GRect(94-115+2,26+6+2+56,90-4,30)),
-     (GRect(24-6,144+2,48+6,27))));
+// GRect IconForeRect = //weather condition icon
+//       (PBL_IF_ROUND_ELSE(
+//       GRect(0+26+3,130-31-2+2,180,32),
+//       GRect(72, 68+9, 72,56)));
 
-GRect WindForeKtsRect =  //windspeed number
-    (PBL_IF_ROUND_ELSE(
-      (GRect(94+20-1+1,180-30-24-2-34,90-4,30)),
-      (GRect(96-6,144+2,48+6,27))));
 
-GRect TempRect =  //temperature number
-    (PBL_IF_ROUND_ELSE(
-       (GRect(0+20-1,24+2+109,90,30)),
-       (GRect(-4,118-3,(144/2)+8,27))));
+// /*GRect Icon1hRect = //weather condition icon next hour INSTEAD OF RAIN
+//       (PBL_IF_ROUND_ELSE(
+//       GRect(0-26-2, 8+91-2+2,180,32),
+//       GRect(0, 68+9, 72,56)));*/
 
-GRect PrecipRect =  //rain chance next hour
-    (PBL_IF_ROUND_ELSE(
-      (GRect(16+12,33+105,90-16,30)),
-      (GRect(0,118-3+4,(144/2),27))));
+// GRect WindKtsRect =  //windspeed number
+//      (PBL_IF_ROUND_ELSE(
+//      (GRect(94-115+2,26+6+2+56,90-4,30)),
+//      (GRect(24-6,144+2,48+6,27))));
 
- GRect TempForeRect =  //temperature number
-    (PBL_IF_ROUND_ELSE(
-      (GRect(0+72+5,180-30-24-2+14,90,30)),
-      (GRect(72,118+1,144/2,27))));
+// GRect WindForeKtsRect =  //windspeed number
+//     (PBL_IF_ROUND_ELSE(
+//       (GRect(94+20-1+1,180-30-24-2-34,90-4,30)),
+//       (GRect(96-6,144+2,48+6,27))));
 
-GRect WindDirNowRect =  //wind direction icon
-    (PBL_IF_ROUND_ELSE(
-      (GRect(78-99,12-4+95,90,32)),
-      (GRect(0,136,144/6,38))));
+// GRect TempRect =  //temperature number
+//     (PBL_IF_ROUND_ELSE(
+//        (GRect(0+20-1,24+2+109,90,30)),
+//        (GRect(-4,118-3,(144/2)+8,27))));
 
-GRect WindDirForeRect =  //wind direction icon
-   (PBL_IF_ROUND_ELSE(
-     (GRect(78+33+1,180-32-12-33,90,32)),
-     (GRect(144/2,136,144/6,38))));
+// GRect PrecipRect =  //rain chance next hour
+//     (PBL_IF_ROUND_ELSE(
+//       (GRect(16+12,33+105,90-16,30)),
+//       (GRect(0,118-3+4,(144/2),27))));
 
-GRect BatteryRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(0,50+75-2-35,180,2),
-      GRect(0,68,144,2)));
+//  GRect TempForeRect =  //temperature number
+//     (PBL_IF_ROUND_ELSE(
+//       (GRect(0+72+5,180-30-24-2+14,90,30)),
+//       (GRect(72,118+1,144/2,27))));
+
+// GRect WindDirNowRect =  //wind direction icon
+//     (PBL_IF_ROUND_ELSE(
+//       (GRect(78-99,12-4+95,90,32)),
+//       (GRect(0,136,144/6,38))));
+
+// GRect WindDirForeRect =  //wind direction icon
+//    (PBL_IF_ROUND_ELSE(
+//      (GRect(78+33+1,180-32-12-33,90,32)),
+//      (GRect(144/2,136,144/6,38))));
+
+// GRect BatteryRect =
+//     (PBL_IF_ROUND_ELSE(
+//       GRect(0,50+75-2-35,180,2),
+//       GRect(0,68,144,2)));
 
     //Battery
   int s_battery_level = battery_state_service_peek().charge_percent;
 
-#ifdef PBL_ROUND
-  int width_round = (s_battery_level * 180) / 100;
-#else
-  int width_rect = (s_battery_level * 144) / 100;
-#endif
+//#ifdef PBL_ROUND
+  int width_battery = (s_battery_level * config.BatteryBarW) / 100;
+// #else
+//   int width_rect = (s_battery_level * 144) / 100;
+// #endif
 
+GRect BatteryFillRect = GRect(config.BatteryBarX, config.BatteryBarY, width_battery, config.BatteryBarH);
 
-
-GRect BatteryFillRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(0,50+75-2-35,width_round,2),
-      GRect(0,68,width_rect,2)));
+// GRect BatteryFillRect =
+//     (PBL_IF_ROUND_ELSE(
+//       GRect(0,50+75-2-35,width_battery,2),
+//       GRect(0,68,width_battery,2)));
 
   char battperc[6];
   snprintf(battperc, sizeof(battperc), "%d", s_battery_level);
@@ -1014,16 +1024,17 @@ GRect BatteryFillRect =
   else if (
       (showForecastWeather == 1 || showForecastWeather == 4) && PWSDataExists && settings.UsePWS)//showPWS data
          {
+          GRect RainRateRect = config.RainRateRect[0];
+          GRect PressureRect = config.PressureRect[0];
+      //  GRect RainRateRect =  //temperature number
+      //      (PBL_IF_ROUND_ELSE(
+      //        (GRect(99-4+27,133-8-37,61,14)),
+      //        (GRect(72,144+2,144/2,27))));
 
-       GRect RainRateRect =  //temperature number
-           (PBL_IF_ROUND_ELSE(
-             (GRect(99-4+27,133-8-37,61,14)),
-             (GRect(72,144+2,144/2,27))));
-
-       GRect PressureRect =  //rain chance next hour
-           (PBL_IF_ROUND_ELSE(
-             (GRect(0+72+5,180-30-24-2+14,90,30)),
-             (GRect(72,118+1,144/2,27))));
+      //  GRect PressureRect =  //rain chance next hour
+      //      (PBL_IF_ROUND_ELSE(
+      //        (GRect(0+72+5,180-30-24-2+14,90,30)),
+      //        (GRect(72,118+1,144/2,27))));
 
        char TempPWSToDraw[8];
        char SpeedPWSToDraw[10];
@@ -1121,8 +1132,99 @@ GRect BatteryFillRect =
            snprintf(SunriseToDraw, sizeof(SunriseToDraw), "%s",settings.sunrisestring12);
          }
 
-        char MoonToDraw[4];
-        snprintf(MoonToDraw, sizeof(MoonToDraw), "%s",settings.moonstring);
+         char MoonToDraw[4];
+         snprintf(MoonToDraw, sizeof(MoonToDraw), "%s",settings.moonstring);
+
+         int s_uvmax_level = settings.UVIndexMax;
+         int s_uvnow_level = settings.UVIndexNow;
+         int s_uvday_level = settings.UVIndexDay;
+         //int s_uvday_level = 14;
+
+         APP_LOG(APP_LOG_LEVEL_DEBUG, "s_uvday_level is %d",s_uvday_level);
+
+              if(settings.UseUVI){
+
+                GRect UVDayValueRect = config.UVDayValueRect[0];
+               
+                // GRect UVDayValueRect =
+                //   (PBL_IF_ROUND_ELSE(
+                //     GRect(0,90,18,18),
+                //     GRect(9+84+6,62+30-6,18,18)));
+
+                graphics_context_set_fill_color(ctx, ColorSelect(settings.UVArcColor,settings.UVArcColorN));
+                
+                GRect arc_bounds = config.arc_bounds[0];
+
+                // GRect arc_bounds =
+                //   PBL_IF_ROUND_ELSE(
+                //     GRect (4,8+52,28,28),
+                //     GRect (90+4,8+80-4,28,28)
+                //     );
+
+                int32_t angle_start = DEG_TO_TRIGANGLE(180+30);
+                int32_t angle_end = DEG_TO_TRIGANGLE(360+180-30);
+                uint16_t inset_thickness = 2;
+                graphics_fill_radial(ctx,arc_bounds,GOvalScaleModeFitCircle,inset_thickness,angle_start,angle_end);
+
+                graphics_context_set_fill_color(ctx, ColorSelect(settings.UVMaxColor,settings.UVMaxColorN));// GColorBlack);
+                //graphics_fill_rect(ctx, UVMaxRect, 0, GCornerNone);
+
+                
+                GRect arc_bounds_max = config.arc_bounds_max[0];
+                
+                // GRect arc_bounds_max =
+                //     PBL_IF_ROUND_ELSE(
+                //       GRect (2,6+52,32,32),
+                //       GRect (88+4,6+80-4,32,32)
+                //     );
+
+                int32_t angle_start_max = DEG_TO_TRIGANGLE(180+30);
+                int32_t angle_end_max = DEG_TO_TRIGANGLE((180+30)+ ((360-60)*s_uvmax_level/10));
+                uint16_t inset_thickness_max = 4;
+                graphics_fill_radial(ctx,arc_bounds_max,GOvalScaleModeFitCircle,inset_thickness_max,angle_start_max,angle_end_max);
+
+                graphics_context_set_fill_color(ctx, ColorSelect(settings.UVNowColor, settings.UVNowColorN));
+                //graphics_fill_rect(ctx,UVNowRect, 3, GCornersAll);
+
+                
+                GRect arc_bounds_now = config.arc_bounds_now[0];
+                
+                // GRect arc_bounds_now =
+                //     PBL_IF_ROUND_ELSE(
+                //       GRect (-2,2+52,40,40),
+                //       GRect (84+4,2+80-4,40,40)
+                //     );
+
+                    int32_t angle_start_now = DEG_TO_TRIGANGLE((180+30)+((360-60)*s_uvnow_level/10)-3);
+                    int32_t angle_end_now = DEG_TO_TRIGANGLE((180+30)+((360-60)*s_uvnow_level/10)+3);
+
+                uint16_t inset_thickness_now = 10;
+                graphics_fill_radial(ctx,arc_bounds_now,GOvalScaleModeFitCircle,inset_thickness_now,angle_start_now,angle_end_now);
+
+
+                char UVValueToDraw[4];
+                snprintf(UVValueToDraw, sizeof(UVValueToDraw), "%d",s_uvday_level);
+                graphics_context_set_text_color(ctx,ColorSelect(settings.UVValColor,settings.UVValColorN));
+                if (s_uvday_level<20){
+                  graphics_draw_text(ctx, UVValueToDraw, FontTempFore, UVDayValueRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+                }
+                else{
+                  graphics_draw_text(ctx, UVValueToDraw, FontUV, UVDayValueRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+                }
+              }
+              else{
+
+
+
+
+                graphics_context_set_text_color(ctx,ColorSelect(settings.Text4Color,settings.Text4ColorN));
+                graphics_draw_text(ctx, MoonToDraw, FontWeatherCondition, MoonRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+
+
+
+              }
+
+
 
         char StepsToDraw[10];
         snprintf(StepsToDraw, sizeof(StepsToDraw), "%s",s_current_steps_buffer);
@@ -1133,8 +1235,6 @@ GRect BatteryFillRect =
 
 
 
-        graphics_context_set_text_color(ctx,ColorSelect(settings.Text4Color,settings.Text4ColorN));
-        graphics_draw_text(ctx, MoonToDraw, FontWeatherCondition, MoonRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
 
   //precip chance
         graphics_context_set_text_color(ctx,ColorSelect(settings.Text8Color,settings.Text8ColorN));
@@ -1250,8 +1350,88 @@ GRect BatteryFillRect =
                snprintf(SunriseToDraw, sizeof(SunriseToDraw), "%s",settings.sunrisestring12);
              }
 
-            char MoonToDraw[4];
-            snprintf(MoonToDraw, sizeof(MoonToDraw), "%s",settings.moonstring);
+             char MoonToDraw[4];
+             snprintf(MoonToDraw, sizeof(MoonToDraw), "%s",settings.moonstring);
+
+             int s_uvmax_level = settings.UVIndexMax;
+             int s_uvnow_level = settings.UVIndexNow;
+             int s_uvday_level = settings.UVIndexDay;
+             //int s_uvday_level = 14;
+
+             APP_LOG(APP_LOG_LEVEL_DEBUG, "s_uvday_level is %d",s_uvday_level);
+
+                  if(settings.UseUVI){
+
+
+
+                    GRect UVDayValueRect =
+                      (PBL_IF_ROUND_ELSE(
+                        GRect(0,90,18,18),
+                        GRect(9+84,62,18,18)));
+
+                    graphics_context_set_fill_color(ctx, ColorSelect(settings.UVArcColor,settings.UVArcColor));
+                    GRect arc_bounds =
+                      PBL_IF_ROUND_ELSE(
+                        GRect (4,8+52,28,28),
+                        GRect (90,8+84,28,28)
+                        );
+
+                    int32_t angle_start = DEG_TO_TRIGANGLE(180+30);
+                    int32_t angle_end = DEG_TO_TRIGANGLE(360+180-30);
+                    uint16_t inset_thickness = 2;
+                    graphics_fill_radial(ctx,arc_bounds,GOvalScaleModeFitCircle,inset_thickness,angle_start,angle_end);
+
+                    graphics_context_set_fill_color(ctx, ColorSelect(settings.UVMaxColor,settings.UVMaxColor));// GColorBlack);
+                    //graphics_fill_rect(ctx, UVMaxRect, 0, GCornerNone);
+
+                    GRect arc_bounds_max =
+                        PBL_IF_ROUND_ELSE(
+                          GRect (2,6+52,32,32),
+                          GRect (88,6+84,32,32)
+                        );
+
+                    int32_t angle_start_max = DEG_TO_TRIGANGLE(180+30);
+                    int32_t angle_end_max = DEG_TO_TRIGANGLE((180+30)+ ((360-60)*s_uvmax_level/10));
+                    uint16_t inset_thickness_max = 4;
+                    graphics_fill_radial(ctx,arc_bounds_max,GOvalScaleModeFitCircle,inset_thickness_max,angle_start_max,angle_end_max);
+
+                    graphics_context_set_fill_color(ctx, ColorSelect(settings.UVNowColor, settings.UVNowColor));
+                    //graphics_fill_rect(ctx,UVNowRect, 3, GCornersAll);
+
+                    GRect arc_bounds_now =
+                        PBL_IF_ROUND_ELSE(
+                          GRect (-2,2+52,40,40),
+                          GRect (84,2+84,40,40)
+                        );
+                        int32_t angle_start_now = DEG_TO_TRIGANGLE((180+30)+((360-60)*s_uvnow_level/10)-3);
+                        int32_t angle_end_now = DEG_TO_TRIGANGLE((180+30)+((360-60)*s_uvnow_level/10)+3);
+
+                    uint16_t inset_thickness_now = 10;
+                    graphics_fill_radial(ctx,arc_bounds_now,GOvalScaleModeFitCircle,inset_thickness_now,angle_start_now,angle_end_now);
+
+
+                    char UVValueToDraw[4];
+                    snprintf(UVValueToDraw, sizeof(UVValueToDraw), "%d",s_uvday_level);
+                    graphics_context_set_text_color(ctx,ColorSelect(settings.UVValColor,settings.UVValColor));
+                    if (s_uvday_level<20){
+                      graphics_draw_text(ctx, UVValueToDraw, FontTempFore, UVDayValueRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+                    }
+                    else{
+                      graphics_draw_text(ctx, UVValueToDraw, FontUV, UVDayValueRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+                    }
+                  }
+                  else{
+
+
+
+
+                    graphics_context_set_text_color(ctx,ColorSelect(settings.Text4Color,settings.Text4ColorN));
+                    graphics_draw_text(ctx, MoonToDraw, FontWeatherCondition, MoonRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
+
+
+
+                  }
+
 
             char StepsToDraw[10];
             snprintf(StepsToDraw, sizeof(StepsToDraw), "%s",s_current_steps_buffer);
@@ -1262,8 +1442,6 @@ GRect BatteryFillRect =
 
 
 
-            graphics_context_set_text_color(ctx,ColorSelect(settings.Text4Color,settings.Text4ColorN));
-            graphics_draw_text(ctx, MoonToDraw, FontWeatherCondition, MoonRect, GTextOverflowModeFill, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentCenter), NULL);
 
       //precip chance
             graphics_context_set_text_color(ctx,ColorSelect(settings.Text8Color,settings.Text8ColorN));
@@ -1293,10 +1471,13 @@ GRect BatteryFillRect =
 
 
 static void layer_update_proc_bt(Layer * layer3, GContext * ctx3){
-   GRect BTIconRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(90,4,24,20),
-      GRect(49,80,47,20)));
+  
+  GRect BTIconRect = config.BTIconRect[0];
+  
+  // GRect BTIconRect =
+  //   (PBL_IF_ROUND_ELSE(
+  //     GRect(90,4,24,20),
+  //     GRect(49,80,47,20)));
 
  graphics_context_set_text_color(ctx3, ColorSelect(settings.Text5Color, settings.Text5ColorN));
  graphics_draw_text(ctx3, "z", FontBTQTIcons, BTIconRect, GTextOverflowModeFill,GTextAlignmentCenter, NULL);
@@ -1304,10 +1485,12 @@ static void layer_update_proc_bt(Layer * layer3, GContext * ctx3){
 }
 
 static void layer_update_proc_qt(Layer * layer4, GContext * ctx4){
-  GRect QTIconRect =
-    (PBL_IF_ROUND_ELSE(
-      GRect(90-24,4,24,20),
-      GRect(49,97,47,20)));
+  GRect QTIconRect = config.QTIconRect[0];
+  
+  // GRect QTIconRect =
+  //   (PBL_IF_ROUND_ELSE(
+  //     GRect(90-24,4,24,20),
+  //     GRect(49,97,47,20)));
 
  quiet_time_icon();
 
@@ -1496,7 +1679,76 @@ if (tx10_color_t){
 settings.Text10Color = GColorFromHEX(tx10_color_t-> value -> int32);
 }
 
+Tuple * uvarccol_t = dict_find(iter,MESSAGE_KEY_UVArcColor);
+if (uvarccol_t){
+settings.UVArcColor = GColorFromHEX(uvarccol_t-> value -> int32);
+}
+
+Tuple * uvmaxcol_t = dict_find(iter,MESSAGE_KEY_UVMaxColor);
+if (uvmaxcol_t){
+settings.UVMaxColor = GColorFromHEX(uvmaxcol_t-> value -> int32);
+}
+
+Tuple * uvvalcol_t = dict_find(iter,MESSAGE_KEY_UVValColor);
+if (uvvalcol_t){
+settings.UVValColor = GColorFromHEX(uvvalcol_t-> value -> int32);
+}
+
+Tuple * uvnowcol_t = dict_find(iter,MESSAGE_KEY_UVNowColor);
+if (uvnowcol_t){
+settings.UVNowColor = GColorFromHEX(uvnowcol_t-> value -> int32);
+}
+
+Tuple * uvarccol_nt = dict_find(iter,MESSAGE_KEY_UVArcColorN);
+if (uvarccol_nt){
+settings.UVArcColorN = GColorFromHEX(uvarccol_nt-> value -> int32);
+}
+
+Tuple * uvmaxcol_nt = dict_find(iter,MESSAGE_KEY_UVMaxColorN);
+if (uvmaxcol_nt){
+settings.UVMaxColorN = GColorFromHEX(uvmaxcol_nt-> value -> int32);
+}
+
+Tuple * uvvalcol_nt = dict_find(iter,MESSAGE_KEY_UVValColorN);
+if (uvvalcol_nt){
+settings.UVValColorN = GColorFromHEX(uvvalcol_nt-> value -> int32);
+}
+
+Tuple * uvnowcol_nt = dict_find(iter,MESSAGE_KEY_UVNowColorN);
+if (uvnowcol_nt){
+settings.UVNowColorN = GColorFromHEX(uvnowcol_nt-> value -> int32);
+}
+
 // Weather conditions
+Tuple * uvi_t = dict_find(iter, MESSAGE_KEY_UseUVI);
+if (uvi_t){
+  if (uvi_t -> value -> int32 == 0){
+    settings.UseUVI = true;
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "UVI switched on");
+  } else {
+    settings.UseUVI = false;
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "MoonPhase switched on");
+  }
+}
+
+Tuple * uvmax_tuple = dict_find(iter, MESSAGE_KEY_UVIndexMax);
+if (uvmax_tuple){
+  settings.UVIndexMax = (int) uvmax_tuple -> value -> int32;
+APP_LOG(APP_LOG_LEVEL_DEBUG, "UVIndexMax is %d",settings.UVIndexMax);
+}
+
+Tuple * uvday_tuple = dict_find(iter, MESSAGE_KEY_UVIndexDay);
+if (uvday_tuple){
+  settings.UVIndexDay = (int) uvday_tuple -> value -> int32;
+APP_LOG(APP_LOG_LEVEL_DEBUG, "UVIndexDay is %d",settings.UVIndexDay);
+}
+
+Tuple * uvnow_tuple = dict_find(iter, MESSAGE_KEY_UVIndexNow);
+if (uvnow_tuple){
+  settings.UVIndexNow = (int) uvnow_tuple -> value -> int32;
+  s_uvnow_level = settings.UVIndexNow;
+}
+
   Tuple * wtemp_t = dict_find(iter, MESSAGE_KEY_WeatherTemp);
   if (wtemp_t){
   snprintf(settings.tempstring, sizeof(settings.tempstring), "%s", wtemp_t -> value -> cstring);
@@ -1769,6 +2021,8 @@ settings.Text10Color = GColorFromHEX(tx10_color_t-> value -> int32);
     }
   }
 
+
+
 #ifdef PBL_MICROPHONE
   Tuple * pws_t = dict_find(iter, MESSAGE_KEY_UsePWS);
   if (pws_t){
@@ -1905,6 +2159,7 @@ static void window_unload(Window * window){
   fonts_unload_custom_font(FontBTQTIcons);
   fonts_unload_custom_font(FontTemp);
   fonts_unload_custom_font(FontTempFore);
+  fonts_unload_custom_font(FontUV);
   fonts_unload_custom_font(FontWeatherIcons);
   fonts_unload_custom_font(FontWeatherCondition);
 
@@ -2025,7 +2280,7 @@ static void init(){
 
   s_countdown = settings.UpSlider;
   //Clean vars
-  strcpy(citistring, "NotSet");
+  //strcpy(citistring, "NotSet");
   //strcpy(settings.icon1hstring, "\U0000F03D");
   strcpy(settings.iconnowstring, "\U0000F03D");
 
@@ -2049,18 +2304,31 @@ static void init(){
    // allocate fonts
   time_font =  ffont_create_from_resource(RESOURCE_ID_FONT_LIZ);
 
+  #ifdef PBL_PLATFORM_EMERY
+  FontDayOfTheWeekShortName = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LIZ_16));  //mod, was 12, font done
+  FontBTQTIcons = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_DRIPICONS_16)); //original
+  FontTemp = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LIZ_37));  //mod, was 27 font done
+  FontTempFore = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LIZ_24));  //mod, was 18 font done
+  FontUV = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_LIZ_19));  //mod, was 14 font done
+  FontWeatherIcons = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHERICONS_20)); //mod was 16 font done
+  FontWeatherCondition = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHERICONS_35));  //mod want 42 was 30 font done
+  
+  #else
   FontDayOfTheWeekShortName = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_LIZ_12, RESOURCE_ID_FONT_LIZ_12)));
   FontBTQTIcons = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_DRIPICONS_16));
   FontTemp = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_LIZ_27, RESOURCE_ID_FONT_LIZ_27)));
   FontTempFore = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_LIZ_18, RESOURCE_ID_FONT_LIZ_18)));
-//sunset sunrise icon font
+  FontUV = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_LIZ_14, RESOURCE_ID_FONT_LIZ_14)));
   FontWeatherIcons = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_WEATHERICONS_16,RESOURCE_ID_FONT_WEATHERICONS_16)));
-//weather icons
-#ifdef PBL_MICROPHONE
-  FontWeatherCondition = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_WEATHERICONS_32,RESOURCE_ID_FONT_WEATHERICONS_32)));
-#else
-  FontWeatherCondition = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHERICONS_32));
-#endif
+  FontWeatherCondition = fonts_load_custom_font(resource_get_handle(PBL_IF_ROUND_ELSE(RESOURCE_ID_FONT_WEATHERICONS_30,RESOURCE_ID_FONT_WEATHERICONS_30)));
+  #endif
+
+  //weather icons
+// #ifdef PBL_MICROPHONE
+  
+// #else
+//   FontWeatherCondition = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_WEATHERICONS_30));
+// #endif
   main_window_push();
   // Register with Event Services
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
