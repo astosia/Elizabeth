@@ -1,7 +1,7 @@
 {
     "author": "astosia",
     "dependencies": {
-        "pebble-clay": "^1.0.4",
+        "@rebble/clay": "^1.0.6",
         "pebble-fctx": "^1.6.0",
         "pebble-fctx-compiler": "^1.2.2"
     },
@@ -137,7 +137,8 @@
             "UVIndexMax",
             "UVIndexNow",
             "UVIndexDay",
-            "UseUVI"
+            "UseUVI",
+            "UseRainGraph"
         ],
         "projectType": "native",
         "resources": {
@@ -172,16 +173,10 @@
                 },
                 {
                     "file": "fonts/Weathericons.ttf",
+                    "characterRegex": "[\uf077\uf07b\uf084\uf055\uf078\uf079\uf03e\uf03d\uf07b\uf00e\uf02c\uf010\uf02d\uf01e\uf005\uf025\uf01d\uf00b\uf02b\uf01c\uf01a\uf029\uf019\uf018\uf017\uf00a\uf02a\uf01b\uf076\uf0b2\uf0b4\uf0b5\uf006\uf026\uf003\uf04a\uf062\uf0b6\uf023\uf082\uf014\uf0c8\uf011\uf056\uf00d\uf02e\uf00c\uf081\uf002\uf086\uf041\uf013\uf073\uf072\uf050\uf015\uf044\uf043\uf048\uf087\uf058\uf057\uf04d\uf088\uf04b\uf095\uf096\uf097\uf098\uf099\uf09a\uf09b\uf09c\uf09d\uf09e\uf09f\uf0a0\uf0a1\uf0a2\uf0a3\uf0a4\uf0a5\uf0a6\uf0a7\uf0a8\uf0a9\uf0aa\uf0ab\uf0ac\uf0ad\uf0ae\uf0af\uf0b0]",
                     "name": "FONT_WEATHERICONS_30",
                     "targetPlatforms": [
-                        "aplite"
-                    ],
-                    "type": "font"
-                },
-                {
-                    "file": "fonts/Weathericons.ttf",
-                    "name": "FONT_WEATHERICONS_30",
-                    "targetPlatforms": [
+                        "aplite",
                         "basalt",
                         "chalk",
                         "diorite"
@@ -190,6 +185,7 @@
                 },
                 {
                     "file": "fonts/Weathericons.ttf",
+                    "characterRegex": "[\uf077\uf07b\uf084\uf055\uf078\uf079\uf03e\uf03d\uf07b\uf00e\uf02c\uf010\uf02d\uf01e\uf005\uf025\uf01d\uf00b\uf02b\uf01c\uf01a\uf029\uf019\uf018\uf017\uf00a\uf02a\uf01b\uf076\uf0b2\uf0b4\uf0b5\uf006\uf026\uf003\uf04a\uf062\uf0b6\uf023\uf082\uf014\uf0c8\uf011\uf056\uf00d\uf02e\uf00c\uf081\uf002\uf086\uf041\uf013\uf073\uf072\uf050\uf015\uf044\uf043\uf048\uf087\uf058\uf057\uf04d\uf088\uf04b\uf095\uf096\uf097\uf098\uf099\uf09a\uf09b\uf09c\uf09d\uf09e\uf09f\uf0a0\uf0a1\uf0a2\uf0a3\uf0a4\uf0a5\uf0a6\uf0a7\uf0a8\uf0a9\uf0aa\uf0ab\uf0ac\uf0ad\uf0ae\uf0af\uf0b0]",
                     "name": "FONT_WEATHERICONS_35",
                     "targetPlatforms": [
                         "emery"
@@ -199,6 +195,7 @@
                 {
                     "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_27",
+                    "characterRegex": "[0-9ampcfh°\\.\\-/:, ]",
                     "targetPlatforms": [
                         "aplite",
                         "basalt",
@@ -210,6 +207,7 @@
                 {
                     "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_37",
+                    "characterRegex": "[0-9ampcfh°\\.\\-/:, ]",
                     "targetPlatforms":[
                         "emery"
                     ],
@@ -237,6 +235,7 @@
                 {
                     "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_14",
+                    "characterRegex": "[,0-9]",
                     "targetPlatforms": [
                         "aplite",
                         "basalt",
@@ -248,6 +247,7 @@
                 {
                     "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_19",
+                    "characterRegex": "[,0-9]",
                     "targetPlatforms": [
                         "emery"
                     ],
@@ -256,6 +256,7 @@
                 {
                     "file": "fonts/Johnston100.ttf",
                     "name": "FONT_LIZ_12",
+                    "characterRegex": "[\u00b0/0-9a-zA-Z°\\.\\,\\-/: ]",
                     "targetPlatforms": [
                         "aplite",
                         "basalt",
@@ -266,6 +267,7 @@
                 },
                 {
                     "file": "fonts/Johnston100.ttf",
+                    "characterRegex": "[\u00b0/0-9a-zA-Z°\\.\\,\\-/: ]",
                     "name": "FONT_LIZ_16",
                     "targetPlatforms": [
                         "emery"
@@ -293,5 +295,5 @@
             "watchface": true
         }
     },
-    "version": "6.0.0"
+    "version": "6.5.0"
 }

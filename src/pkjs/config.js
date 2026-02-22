@@ -21,7 +21,7 @@ module.exports = [
         "type": "toggle",
         "messageKey": "HealthOff",
         "label": "Switch off Steps",
-        "defaultValue": true,
+        "defaultValue": false,
         "capabilities":["HEALTH"]
       },
       {
@@ -361,6 +361,51 @@ module.exports = [
             "type": "heading",
             "defaultValue": "Weather settings"
           },
+           {
+          "type": "select",
+          "messageKey": "WeatherProv",
+          "defaultValue": "ds",
+          "label": "Weather Provider",
+          "options": [
+            {
+              "label": "Open-Meteo",
+              "value": "ds"
+            },
+            {
+              "label": "OpenWeatherMap",
+              "value": "owm"
+            }
+          ]
+        },
+        {
+           "type": "input",
+           "messageKey": "Lat",
+           "defaultValue": "51.4769",
+           "label": "Manual Location - Latitude",
+           "attributes": {
+           "placeholder": "eg: 51.4769 (leave blank to use GPS)"
+           }
+         },
+         {
+            "type": "input",
+            "messageKey": "Long",
+            "defaultValue": "0.0005",
+            "label": "Manual Location - Longitude",
+            "description": "Leave both blank to use GPS location for sunrise & sunset times and weather. You can use <a href =https://www.google.com/maps>Google Maps</a> or <a href =https://www.openstreetmap.org/>OpenStreetMap</a> to find latitude & longitude.",
+            "attributes": {
+              "placeholder": "eg: -0.0005 (leave blank to use GPS)"
+            }
+          },
+       {
+          "type": "input",
+          "messageKey": "APIKEY_User",
+          "defaultValue": "",
+          "label": "OWM API Key",
+          "description": "Weather data uses Open-Meteo by default which does not require an API key.  If you prefer OpenWeatherMap, you can <a href =https://home.openweathermap.org/users/sign_up/>register for a free personal API key here</a>.",
+          "attributes": {
+            "placeholder": "Paste OpenWeatherMap API Key here, leave blank for Open-Meteo"
+          }
+        },
           {
             "type": "slider",
             "messageKey": "UpSlider",
@@ -374,20 +419,55 @@ module.exports = [
           {
             "type": "toggle",
             "messageKey": "WeatherUnit",
-            "label": "Temperature in Fahrenheit",
+            "label": "Temperature in °C (off) or °F (on)",
             "defaultValue": false,
           },
           {
             "type": "toggle",
             "messageKey": "UseUVI",
-            "label": "Show UV Index (off) or Moophase (on)",
+            "label": "UV Index (off) or Moophase (on)",
+            "description": "Show either daily maximum & current UV index data, or moonphase",
             "defaultValue": true,
           },
+          {
+            "type": "toggle",
+            "messageKey": "UseRainGraph",
+            "label": "Rain Icon (off) or Raingraph (on) ",
+            "description": "Show rain in next hour, either as an Umbrella icon or a radial graph.  If no rain is due, icon shows stars",
+            "defaultValue": false,
+          },
+          {
+            "type": "slider",
+            "messageKey": "Rainmultiplier",
+            "defaultValue": 3,
+            "label": "Rain bar length (relative)",
+            "description": "Increase or decrease the size of the raingraph",
+            "min": 1,
+            "max": 10,
+            "step": 1
+          },
+          {
+          "type": "select",
+          "messageKey": "RainUnit",
+          "label": "Rain quantity unit to display",
+          "description": "Rain displays as amount of rain (in mm or inches) & chance of rain in next hour",
+          "defaultValue": "mm",
+             "options": [
             {
+              "label": "millimeters",
+              "value": "mm"
+            },
+            {
+              "label": "inches",
+              "value": "in"
+            }
+          ]
+          },
+          {
             "type": "select",
             "messageKey": "WindUnit",
             "label": "Wind speed unit to display",
-            "defaultValue": "knots",
+            "defaultValue": "kts",
                "options": [
               {
                 "label": "knots",
@@ -407,146 +487,7 @@ module.exports = [
               }
             ]
           },
-          {
-          "type": "select",
-          "messageKey": "RainUnit",
-          "label": "Rain quantity unit to display",
-          "defaultValue": "mm",
-             "options": [
-            {
-              "label": "millimeters | mm/h",
-              "value": "mm"
-            },
-            {
-              "label": "inches | in/h",
-              "value": "in"
-            }
-          ]
-        },
-        {
-          "type": "slider",
-          "messageKey": "Rainmultiplier",
-          "defaultValue": 3,
-          "label": "Rain bar length (relative)",
-          "description": "Increase or decrease the size of the rain bars",
-          "min": 1,
-          "max": 10,
-          "step": 1
-        },
-        {
-          "type": "select",
-          "messageKey": "WeatherProv",
-          "defaultValue": "ds",
-          "label": "Weather Provider",
-          "options": [
-            {
-              "label": "Open-Meteo",
-              "value": "ds"
-            },
-            {
-              "label": "OpenWeatherMap",
-              "value": "owm"
-            }
-          ]
-        },
-        {
-           "type": "input",
-           "messageKey": "Lat",
-           "defaultValue": "",
-           "label": "Manual Location - Latitude",
-           "attributes": {
-           "placeholder": "eg: 51.4962 (leave blank to use GPS)"
-           }
-         },
-         {
-            "type": "input",
-            "messageKey": "Long",
-            "defaultValue": "",
-            "label": "Manual Location - Longitude",
-            "description": "Leave both blank to use GPS location for sunrise & sunset times and weather. You can use <a href =https://www.google.com/maps>Google Maps</a> or <a href =https://www.openstreetmap.org/>OpenStreetMap</a> to find latitude & longitude.",
-            "attributes": {
-              "placeholder": "eg: -0.0989 (leave blank to use GPS)"
-            }
-          },
-       {
-          "type": "input",
-          "messageKey": "APIKEY_User",
-          "defaultValue": "",
-          "label": "API Key",
-          "description": "Weather data uses Open-Meteo by default which does not require an API key.  If you prefer OpenWeatherMap, you can <a href =https://home.openweathermap.org/users/sign_up/>register for a free personal API key here</a>.",
-          "attributes": {
-            "placeholder": "Paste your OpenWeatherMap API Key here, or leave blank for Open-Meteo"
-          }
-        },
         ]
-          },
-          {
-            "type": "section",
-            "items": [
-              {
-                "type": "heading",
-                "defaultValue": "Personal Weather Station settings",
-                "capabilities":["MICROPHONE"]
-              },
-              {
-                "type": "toggle",
-                "messageKey": "UsePWS",
-                "label": "Show Personal Weather Station data.",
-                "defaultValue": false,
-                "capabilities":["MICROPHONE"]
-              },
-              {
-              "type": "select",
-              "messageKey": "PressureUnit",
-              "capabilities":["MICROPHONE"],
-              "label": "Barometric Pressure Unit",
-              "defaultValue": "mb",
-                 "options": [
-                {
-                  "label": "millibars (mb)",
-                  "value": "mb"
-                },
-                {
-                  "label": "inches of Mercury (Hg)",
-                  "value": "hg"
-                },
-                {
-                  "label": "millimeters of Mercury (mmHg)",
-                  "value": "tor"
-                },
-                {
-                  "label": "Pascals (P)",
-                  "value": "ap"
-                },
-                {
-                  "label": "standard atmospheric (atm)",
-                  "value": "atm"
-                }
-                ]
-              },
-              {
-                 "type": "input",
-                 "messageKey": "PWSAPIKEY_User",
-                 "defaultValue": "",
-                 "label": "Personal Weather Station API Key",
-                 "description": "Use this to access Personal Weather Station data via Weather Underground/The Weather Company.",
-                 "attributes": {
-                   "placeholder": "Paste Weather Underground/The Weather Company API Key"
-                 },
-                 "capabilities":["MICROPHONE"]
-               },
-               {
-                  "type": "input",
-                  "messageKey": "PWSStationID_User",
-                  "defaultValue": "",
-                  "label": "Personal Weather Station ID",
-                  "description": "Enter your Personal Weather Station Station ID",
-                  "attributes": {
-                    "placeholder": "eg: KMAHANOV10"
-                  },
-                  "capabilities":["MICROPHONE"]
-                },
-            ]
           },
         {
           "type": "submit",
@@ -554,7 +495,7 @@ module.exports = [
           },
           {
           "type": "heading",
-          "defaultValue": "version v6.0", 
+          "defaultValue": "version v6.5", 
           "size":6
           },
           {

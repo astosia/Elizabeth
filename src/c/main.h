@@ -50,16 +50,16 @@ typedef struct ClaySettings {
   GColor UVArcColorN;
   GColor UVValColorN;
   int WeatherUnit;
-  char* WindUnit;
+  char WindUnit [8];
   int UpSlider;
-  char* WeatherTemp;
-  char* TempFore;
+  char WeatherTemp [8];
+  char TempFore [10];
 //  char FontChoice[12];
   char moonstring[4];
-  char sunsetstring[6];
-  char sunrisestring[6];
-  char sunsetstring12[6];
-  char sunrisestring12[6];
+  char sunsetstring[8];
+  char sunrisestring[8];
+  char sunsetstring12[8];
+  char sunrisestring12[8];
   char tempstring[8];
   char condstring[4];
   char windstring[10];
@@ -70,10 +70,10 @@ typedef struct ClaySettings {
   char icon1hstring[4];
   char windiconnowstring[4];
   char windiconavestring[4];
-  char templowstring[6];
+  char templowstring[10];
   char temphistring[10];
   char rainstring[10];
-  char popstring[6];
+  char popstring[10];
   int Weathertimecapture;
   bool NightTheme;
   bool HealthOff;
@@ -82,22 +82,23 @@ typedef struct ClaySettings {
   bool RemoveZero24h;
   char raintime24h[6];
   char raintime12h[6];
-  char* RainUnit;
+  char RainUnit [8];
   bool UseWeather;
   bool UseUVI;
+  bool UseRainGraph;
   int UVIndexMax;
   int UVIndexNow;
   int UVIndexDay;
-  #ifdef PBL_MICROPHONE
-  bool UsePWS;
-  char windstringpws[10];
-  char tempstringpws[6];
-  char windiconnowstringpws[4];
-  char pressurestringpws[6];
-  char precipratestringpws[6];
-  char preciptotalstringpws[6];
-  char* PressureUnit;
-  #endif
+  // #ifdef PBL_MICROPHONE
+  // bool UsePWS;
+  // char windstringpws[10];
+  // char tempstringpws[10];
+  // char windiconnowstringpws[4];
+  // char pressurestringpws[16];
+  // char precipratestringpws[10];
+  // char preciptotalstringpws[10];
+  // char PressureUnit[10];
+  // #endif
   int rain5;
   int rain15;
   int rain25;
